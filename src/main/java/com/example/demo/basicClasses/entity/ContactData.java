@@ -14,14 +14,14 @@ import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
-@Table(name = "Contact data")
+@Table(name = "Contactdata")
 public class ContactData {
 
     @Id
     @Column(name = "id")
     private UUID id;
 
-    @Column(name = "phone number")
+    @Column(name = "phone_number")
     private String phoneNumber;
     @Column(name = "email")
     private String email;

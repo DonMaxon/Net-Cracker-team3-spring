@@ -1,18 +1,15 @@
 package com.example.demo.basicClasses.entity;
 
 
-
 import com.example.demo.basicClasses.Repo;
+
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.IOException;
 
 import java.util.*;
@@ -20,6 +17,7 @@ import java.util.*;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
 @Table(name = "Location")
+@Access(AccessType.FIELD)
 public class Location implements ObjectWithId {
 
     public enum Types{
@@ -59,7 +57,8 @@ public class Location implements ObjectWithId {
     private Types type;
     @JsonView(Views.secondSerialize.class)
     @JsonIgnore
-    @Column(name = "parent id")
+    @JoinColumn(name = "parent_id", referencedColumnName = "id")
+    @OneToOne
     private Location parent;
 
     public Location(){

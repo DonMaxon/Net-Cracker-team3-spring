@@ -11,23 +11,22 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.springframework.stereotype.Component;
 
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.IOException;
 import java.util.*;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
-@Table(name = "Order")
+@Table(name = "Orders")
+@Access(AccessType.FIELD)
 public class Order implements OrderService, ObjectWithId {
 
     public enum OrderStatus  {ENTERING, IN_PROGRESS, COMPLETED};
     public enum OrderAIM{NEW, MODIFY, DISCONNECT};
 
     @Id
+    @Column(name = "id")
     private UUID id;
     @Column(name = "name")
     private String name;
@@ -35,15 +34,18 @@ public class Order implements OrderService, ObjectWithId {
     private String description;
 
     @JsonIgnore
-    @Column(name = "service id")
+    @ManyToOne
+    @JoinColumn(name = "service_id", referencedColumnName = "id")
     private Service service;
 
     @JsonIgnore
-    @Column(name = "specification id")
+    @ManyToOne
+    @JoinColumn(name = "specification_id", referencedColumnName = "id")
     private Specification specification;
 
     @JsonIgnore
-    @Column(name = "customer id")
+    @ManyToOne
+    @JoinColumn(name = "customer_id", referencedColumnName = "id")
     private Customer customer;
 
     @Column(name = "status")
@@ -52,6 +54,7 @@ public class Order implements OrderService, ObjectWithId {
     private OrderAIM aim;
 
     @JsonDeserialize(keyUsing = Attribute.AttributeDeserializer.class)
+    @Transient
     private Map<Attribute, AttributeValue> params;
 
     public Order() {

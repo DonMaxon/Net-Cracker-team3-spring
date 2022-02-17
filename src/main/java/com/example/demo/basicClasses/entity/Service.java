@@ -7,10 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.IOException;
 import java.util.*;
 
@@ -19,11 +16,13 @@ import java.util.*;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
 @Table(name = "service")
+@Access(AccessType.FIELD)
 public class Service implements OrderService,  ObjectWithId {
 
     public enum ServiceStatus  {PLANNED, ACTIVE, DISCONNECTED};
 
     @Id
+    @Column(name = "id")
     private UUID id;
     @Column(name = "name")
     private String name;
@@ -32,15 +31,20 @@ public class Service implements OrderService,  ObjectWithId {
     @Column(name = "status")
     private ServiceStatus status;
     @JsonIgnore
-    @Column(name = "specification id")
+    @ManyToOne
+    @JoinColumn(name = "specification_id", referencedColumnName = "id")
     private Specification specification;
 
     @JsonIgnore
-    @Column(name = "customer id")
+    @ManyToOne
+    @JoinColumn(name = "customer_id", referencedColumnName = "id")
     private Customer customer;
 
 
     @JsonDeserialize(keyUsing = Attribute.AttributeDeserializer.class)
+    @JoinColumn(name = "parameters")
+    @OneToMany
+    @Transient
     private Map<Attribute, AttributeValue> params;
 
     public Service() {
@@ -192,6 +196,7 @@ public class Service implements OrderService,  ObjectWithId {
     }
 
     @JsonGetter
+
     private UUID getSpecificationID(){
         return specification.getId();
     }
@@ -212,6 +217,7 @@ public class Service implements OrderService,  ObjectWithId {
 
     @JsonGetter
     @JsonView(OrderAndServiceViews.WithCustomerID.class)
+
     private UUID getCustomerID(){
         return customer.getId();
     }

@@ -1,16 +1,13 @@
 package com.example.demo.basicClasses.entity;
 
-
 import com.example.demo.basicClasses.Repo;
+
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -19,6 +16,7 @@ import java.util.UUID;
 @Entity
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Table(name = "Attribute")
+@Access(AccessType.FIELD)
 public class Attribute implements ObjectWithId {
 
     public Attribute(UUID randomUUID, String name, boolean isMandatory) {
@@ -35,8 +33,10 @@ public class Attribute implements ObjectWithId {
     private AttributeTypes type;
     @Column(name = "name")
     private String name;
+    @JoinColumn(name = "specification", referencedColumnName = "id")
+    @ManyToOne
     @JsonIgnore
-    @Column(name = "specification id")
+    //@Transient
     private Specification specification;
 
     public Attribute(){
@@ -180,6 +180,16 @@ public class Attribute implements ObjectWithId {
             }
             return new Specification(id);
         }
+    }
+
+    //@Access(AccessType.PROPERTY)
+    //@Column(name = "specificationID")
+    private UUID getSpecificationId(){
+        return specification.getId();
+    }
+
+    private void setSpecificationId(UUID id){
+        specification.setId(id);
     }
 
 }

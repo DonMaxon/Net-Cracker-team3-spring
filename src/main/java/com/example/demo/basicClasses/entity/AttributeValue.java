@@ -8,13 +8,18 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Objects;
 
 
 //@JsonSerialize(using = AttributeValue.AttributeValueSerializer.class)
+@Embeddable
+@Table(name = "Value")
 public class AttributeValue {
     @JsonIgnore
     private LocalDate date;
@@ -50,6 +55,7 @@ public class AttributeValue {
     }
 
     @JsonGetter
+    @Column(name = "value")
     public String getValue(){
         try {
             switch (type) {

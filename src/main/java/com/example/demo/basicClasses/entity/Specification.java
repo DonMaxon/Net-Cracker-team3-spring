@@ -9,10 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +29,9 @@ public class Specification implements ObjectWithId {
     private String name;
     @Column(name = "description")
     private String description;
+    @Transient
     private List<Attribute> attributes;
+    @Transient
     private List<Location> availableLocations;
 
     @JsonIgnore

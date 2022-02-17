@@ -17,31 +17,33 @@ import java.util.*;
 @JsonPropertyOrder({"id","firstName","lastName","contactData", "services", "orders", "locationId"})
 @Entity
 @Table(name = "Customer")
+@Access(AccessType.FIELD)
 public class Customer implements ObjectWithId {
 
     @Id
     @Column(name = "id")
     private UUID id;
-    @Column(name = "first name")
+    @Column(name = "first_name")
     private String firstName;
-    @Column(name = "last name")
+    @Column(name = "last_name")
     private String lastName;
 
-    @JoinColumn(name = "contact data")
+    @JoinColumn(name = "contact_data", referencedColumnName = "id")
     @OneToOne
     private ContactData contactData;
 
-    @JoinColumn(name = "location")
+    @JoinColumn(name = "location", referencedColumnName = "id")
     @OneToOne
+    //@Transient
     private Location location;
 
-    @Column(name = "account balance")
+    @Column(name = "account_balance")
     private int accountBalance;
 
-
+    @Transient
     private ArrayList<Order> orders;
 
-
+    @Transient
     private ArrayList<Service> services;
 
     public Customer(){
