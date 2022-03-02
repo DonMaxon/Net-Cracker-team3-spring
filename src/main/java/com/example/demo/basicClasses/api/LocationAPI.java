@@ -11,17 +11,8 @@ import java.util.UUID;
 @Service
 public class LocationAPI {
     private static LocationAPI instance;
-    private LocationAPI(){
 
-    }
-    public static LocationAPI getInstance(){
-        if (instance==null){
-            return new LocationAPI();
-        }
-        else{
-            return instance;
-        }
-    }
+
     public Location createLocation(String name){
         return new Location(UUID.randomUUID(), name, Location.Types.COUNTRY, null);
     }

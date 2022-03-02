@@ -33,7 +33,7 @@ public class Attribute implements ObjectWithId {
     private AttributeTypes type;
     @Column(name = "name")
     private String name;
-    @JoinColumn(name = "specification", referencedColumnName = "id")
+    @JoinColumn(name = "specification")
     @ManyToOne
     @JsonIgnore
     //@Transient

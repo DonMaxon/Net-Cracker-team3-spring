@@ -6,32 +6,40 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.springframework.stereotype.Component;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Objects;
 
 
 //@JsonSerialize(using = AttributeValue.AttributeValueSerializer.class)
-@Embeddable
-@Table(name = "Value")
+@Entity
+@Table(name = "attribute_value")
 public class AttributeValue {
+
+    @EmbeddedId
+    private AttributeValueId attributeValueId;
+
     @JsonIgnore
     private LocalDate date;
     @JsonIgnore
     private Integer integer;
     @JsonIgnore
-    private String str;
+    private String string;
     @JsonIgnore
     private Attribute.AttributeTypes type;
 
     public AttributeValue(){
 
+    }
+
+    public AttributeValueId getAttributeValueId() {
+        return attributeValueId;
+    }
+
+    public void setAttributeValueId(AttributeValueId attributeValueId) {
+        this.attributeValueId = attributeValueId;
     }
 
     public void setType(Attribute.AttributeTypes type){
@@ -45,13 +53,13 @@ public class AttributeValue {
         AttributeValue that = (AttributeValue) o;
         return Objects.equals(date, that.date) &&
                 Objects.equals(integer, that.integer) &&
-                Objects.equals(str, that.str) &&
+                Objects.equals(string, that.string) &&
                 type == that.type;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(date, integer, str, type);
+        return Objects.hash(date, integer, string, type);
     }
 
     @JsonGetter
@@ -68,14 +76,14 @@ public class AttributeValue {
         catch (NullPointerException e){
 
         }
-        return str;
+        return string;
     }
 
 
     @JsonSetter
     public void setValue(String str){
         if (type==null){
-            this.str=str;
+            this.string =str;
             return;
         }
         switch (type){
@@ -87,7 +95,7 @@ public class AttributeValue {
                 return;
 
         }
-        this.str=str;
+        this.string =str;
     }
 
     public String serialize() throws JsonProcessingException {

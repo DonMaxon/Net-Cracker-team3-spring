@@ -16,18 +16,7 @@ import java.util.UUID;
 public class SpecificationAPI {
     private static SpecificationAPI instance;
 
-    private SpecificationAPI(){
 
-    }
-
-    public static SpecificationAPI getInstance(){
-        if (instance==null){
-            return new SpecificationAPI();
-        }
-        else{
-            return instance;
-        }
-    }
 
     public Specification createSpecification(String name){
         return new Specification(UUID.randomUUID(), name);

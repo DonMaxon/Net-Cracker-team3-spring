@@ -52,9 +52,9 @@ public  class Repo {
         value.setType(Attribute.AttributeTypes.NUMBER);
         value.setValue("2");
         customers.get(0).getServices().get(0).getParams().put(
-                specs.get(0).getAttributes().get(1),
+                specs.get(0).getAttributes().get(1).getId(),
                 value);
-        customers.get(0).getOrders().get(0).getParams().put(specs.get(0).getAttributes().get(1), value);
+        customers.get(0).getOrders().get(0).getParams().put(specs.get(0).getAttributes().get(1).getId(), value);
     }
 
     private Repo(ArrayList<Customer> customers, ArrayList<Location> locations, ArrayList<Specification> specs){
@@ -121,17 +121,17 @@ public  class Repo {
                     res.customers.get(i).getOrders().get(j).setService(
                             (Service)findById(res.getAllServices(), res.customers.get(i).getOrders().get(j).getService().getId()));
                 }
-                for (Map.Entry<Attribute, AttributeValue> entry:
+                for (Map.Entry<UUID, AttributeValue> entry:
                         res.customers.get(i).getOrders().get(j).getParams().entrySet())
-                if (findById(res.getSpecs(), entry.getKey().getSpecification().getId())!=null){
-                    entry.getKey().setSpecification((Specification)findById(res.getSpecs(), entry.getKey().getSpecification().getId()));
+                if (findById(res.getSpecs(), Specification.findAttributeById(entry.getKey()).getSpecification().getId())!=null){
+                    Specification.findAttributeById(entry.getKey()).setSpecification((Specification)findById(res.getSpecs(), Specification.findAttributeById(entry.getKey()).getSpecification().getId()));
                 }
             }
             for (int j = 0; j < res.customers.get(i).getServices().size(); ++j){
-                for (Map.Entry<Attribute, AttributeValue> entry:
+                for (Map.Entry<UUID, AttributeValue> entry:
                         res.customers.get(i).getServices().get(j).getParams().entrySet())
-                    if (findById(res.getSpecs(), entry.getKey().getSpecification().getId())!=null){
-                        entry.getKey().setSpecification((Specification)findById(res.getSpecs(), entry.getKey().getSpecification().getId()));
+                    if (findById(res.getSpecs(), Specification.findAttributeById(entry.getKey()).getSpecification().getId())!=null){
+                        Specification.findAttributeById(entry.getKey()).setSpecification((Specification)findById(res.getSpecs(), Specification.findAttributeById(entry.getKey()).getSpecification().getId()));
                     }
             }
         }

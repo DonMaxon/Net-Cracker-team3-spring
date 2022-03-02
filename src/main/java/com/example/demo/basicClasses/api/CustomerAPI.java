@@ -14,17 +14,8 @@ import java.util.regex.Pattern;
 @Service
 public class CustomerAPI {
     private static CustomerAPI instance;
-    private CustomerAPI(){
 
-    }
-    public static CustomerAPI getInstance(){
-        if (instance==null){
-            return new CustomerAPI();
-        }
-        else{
-            return instance;
-        }
-    }
+
     public Customer createCustomer(String firstName, String lastName, ContactData contactData,
                                    Location location, int balance){
         if (location.getType()!= Location.Types.ADDRESS){

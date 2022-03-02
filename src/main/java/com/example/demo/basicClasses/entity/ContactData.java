@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
-@Table(name = "Contactdata")
+@Table(name = "Contact_data")
 public class ContactData {
 
     @Id

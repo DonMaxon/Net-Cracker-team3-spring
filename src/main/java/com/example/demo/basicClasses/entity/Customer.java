@@ -28,11 +28,11 @@ public class Customer implements ObjectWithId {
     @Column(name = "last_name")
     private String lastName;
 
-    @JoinColumn(name = "contact_data", referencedColumnName = "id")
+    @JoinColumn(name = "contact_data")
     @OneToOne
     private ContactData contactData;
 
-    @JoinColumn(name = "location", referencedColumnName = "id")
+    @JoinColumn(name = "location")
     @OneToOne
     //@Transient
     private Location location;
@@ -40,11 +40,11 @@ public class Customer implements ObjectWithId {
     @Column(name = "account_balance")
     private int accountBalance;
 
-    @Transient
-    private ArrayList<Order> orders;
+    @OneToMany(mappedBy = "customer")
+    private List<Order> orders;
 
-    @Transient
-    private ArrayList<Service> services;
+    @OneToMany(mappedBy = "customer")
+    private List<Service> services;
 
     public Customer(){
     }
@@ -115,7 +115,7 @@ public class Customer implements ObjectWithId {
         this.lastName = lastName;
     }
 
-    public ArrayList<Order> getOrders() {
+    public List<Order> getOrders() {
         return orders;
     }
 
@@ -123,7 +123,7 @@ public class Customer implements ObjectWithId {
         this.orders = orders;
     }
 
-    public ArrayList<Service> getServices() {
+    public List<Service> getServices() {
         return services;
     }
 
@@ -179,13 +179,13 @@ public class Customer implements ObjectWithId {
             customer.services.get(i).setCustomer(customer);
         }
         for (int i =0; i < customer.services.size(); ++i) {
-            for (Map.Entry<Attribute, AttributeValue> entry : customer.getServices().get(i).getParams().entrySet()) {
-                entry.setValue(normalizeAttributeValues(entry.getKey(), entry.getValue()));
+            for (Map.Entry<UUID, AttributeValue> entry : customer.getServices().get(i).getParams().entrySet()) {
+                entry.setValue(normalizeAttributeValues(Specification.findAttributeById(entry.getKey()), entry.getValue()));
             }
         }
         for (int i =0; i < customer.orders.size(); ++i) {
-            for (Map.Entry<Attribute, AttributeValue> entry : customer.getOrders().get(i).getParams().entrySet()) {
-                entry.setValue(normalizeAttributeValues(entry.getKey(), entry.getValue()));
+            for (Map.Entry<UUID, AttributeValue> entry : customer.getOrders().get(i).getParams().entrySet()) {
+                entry.setValue(normalizeAttributeValues(Specification.findAttributeById(entry.getKey()), entry.getValue()));
             }
         }
         return customer;

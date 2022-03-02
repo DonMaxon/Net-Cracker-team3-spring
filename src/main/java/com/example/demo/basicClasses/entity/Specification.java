@@ -1,5 +1,6 @@
 package com.example.demo.basicClasses.entity;
 
+import com.example.demo.basicClasses.Repo;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -29,9 +30,9 @@ public class Specification implements ObjectWithId {
     private String name;
     @Column(name = "description")
     private String description;
-    @Transient
+    @OneToMany
     private List<Attribute> attributes;
-    @Transient
+    @ManyToMany
     private List<Location> availableLocations;
 
     @JsonIgnore
@@ -100,6 +101,23 @@ public class Specification implements ObjectWithId {
         this.attributes = attributes;
     }
 
+    public List<UUID> getAttributeIds(){
+        ArrayList<UUID> attributeIds = new ArrayList<>(0);
+        for (int i = 0; i < attributes.size(); ++i){
+            attributeIds.add(attributes.get(i).getId());
+        }
+        return attributeIds;
+    }
+    public static Attribute findAttributeById(UUID id){
+        for (int i = 0; i < Repo.getInstance().getSpecs().size(); ++i){
+            for (int j = 0; j < Repo.getInstance().getSpecs().get(i).getAttributes().size(); ++j){
+                if (id.equals(Repo.getInstance().getSpecs().get(i).getAttributes().get(j).getId())){
+                    return Repo.getInstance().getSpecs().get(i).getAttributes().get(j);
+                }
+            }
+        }
+        return null;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -19,14 +19,12 @@ import java.util.*;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
 @Table(name = "Orders")
-@Access(AccessType.FIELD)
 public class Order implements OrderService, ObjectWithId {
 
     public enum OrderStatus  {ENTERING, IN_PROGRESS, COMPLETED};
     public enum OrderAIM{NEW, MODIFY, DISCONNECT};
 
     @Id
-    @Column(name = "id")
     private UUID id;
     @Column(name = "name")
     private String name;
@@ -35,17 +33,17 @@ public class Order implements OrderService, ObjectWithId {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "service_id", referencedColumnName = "id")
+    @JoinColumn(name = "service_id")
     private Service service;
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "specification_id", referencedColumnName = "id")
+    @JoinColumn(name = "specification_id")
     private Specification specification;
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "customer_id", referencedColumnName = "id")
+    @JoinColumn(name = "customer_id")
     private Customer customer;
 
     @Column(name = "status")
@@ -55,7 +53,10 @@ public class Order implements OrderService, ObjectWithId {
 
     @JsonDeserialize(keyUsing = Attribute.AttributeDeserializer.class)
     @Transient
-    private Map<Attribute, AttributeValue> params;
+    private Map<UUID, AttributeValue> params;
+
+    @Transient
+    private List<AttributeValue> values;
 
     public Order() {
     }
@@ -79,7 +80,7 @@ public class Order implements OrderService, ObjectWithId {
     }
 
     public Order(UUID id, String name, String prescription, Service serviceId,
-                 Specification specification, Customer customer, OrderStatus status, OrderAIM aim, Map<Attribute, AttributeValue> params) {
+                 Specification specification, Customer customer, OrderStatus status, OrderAIM aim, Map<UUID, AttributeValue> params) {
         this.id = id;
         this.name = name;
         this.description = prescription;
@@ -91,19 +92,21 @@ public class Order implements OrderService, ObjectWithId {
         this.params=params;
     }
 
-    public Map<Attribute, AttributeValue> getParams() {
+    public Map<UUID, AttributeValue> getParams() {
         if (status==OrderStatus.ENTERING) {
             return params;
         }
         return new HashMap<>(params);
     }
 
-    public void setParams(Map<Attribute, AttributeValue> params) {
+    public void setParams(Map<UUID, AttributeValue> params) {
         if (status==OrderStatus.ENTERING||status==null) {
             this.params = params;
         }
 
     }
+
+
 
     public UUID getId() {
         return id;
@@ -254,9 +257,9 @@ public class Order implements OrderService, ObjectWithId {
     public static Order deserialize(String str) throws IOException{
         ObjectMapper mapper = new ObjectMapper();
         Order order = mapper.readValue(str, Order.class);
-        for(Map.Entry<Attribute, AttributeValue> entry: order.getParams().entrySet()){
+        for(Map.Entry<UUID, AttributeValue> entry: order.getParams().entrySet()){
             String val;
-            switch(entry.getKey().getType()){
+            switch(Specification.findAttributeById(entry.getKey()).getType()){
                 case DATE: val = entry.getValue().getValue();
                     entry.setValue(new AttributeValue());
                     entry.getValue().setType(Attribute.AttributeTypes.DATE);
@@ -273,6 +276,8 @@ public class Order implements OrderService, ObjectWithId {
         }
         return order;
     }
+
+
 
 
     @JsonGetter

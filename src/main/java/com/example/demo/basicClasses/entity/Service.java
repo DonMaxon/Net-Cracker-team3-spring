@@ -16,13 +16,11 @@ import java.util.*;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
 @Table(name = "service")
-@Access(AccessType.FIELD)
 public class Service implements OrderService,  ObjectWithId {
 
     public enum ServiceStatus  {PLANNED, ACTIVE, DISCONNECTED};
 
     @Id
-    @Column(name = "id")
     private UUID id;
     @Column(name = "name")
     private String name;
@@ -32,12 +30,12 @@ public class Service implements OrderService,  ObjectWithId {
     private ServiceStatus status;
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "specification_id", referencedColumnName = "id")
+    @JoinColumn(name = "specification_id")
     private Specification specification;
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "customer_id", referencedColumnName = "id")
+    @JoinColumn(name = "customer_id")
     private Customer customer;
 
 
@@ -45,7 +43,10 @@ public class Service implements OrderService,  ObjectWithId {
     @JoinColumn(name = "parameters")
     @OneToMany
     @Transient
-    private Map<Attribute, AttributeValue> params;
+    private Map<UUID, AttributeValue> params;
+
+    @Transient
+    private List<AttributeValue> values;
 
     public Service() {
     }
@@ -56,7 +57,7 @@ public class Service implements OrderService,  ObjectWithId {
     }
 
 
-    public Service(UUID id, String name, String description, ServiceStatus status, Specification specId, Customer customer, Map<Attribute, AttributeValue> params) {
+    public Service(UUID id, String name, String description, ServiceStatus status, Specification specId, Customer customer, Map<UUID, AttributeValue> params) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -75,11 +76,20 @@ public class Service implements OrderService,  ObjectWithId {
         params = new HashMap<>();
     }
 
-    public Map<Attribute, AttributeValue> getParams() {
+    public void addAttribute(UUID id, AttributeValue value){
+        params.put(id, value);
+        values.add(value);
+    }
+
+    public void changeValue(UUID id, AttributeValue newVal){
+        params.put(id, newVal);
+    }
+
+    public Map<UUID, AttributeValue> getParams() {
         return params;
     }
 
-    public void setParams(Map<Attribute, AttributeValue> params) {
+    public void setParams(Map<UUID, AttributeValue> params) {
         this.params = params;
     }
 
@@ -175,9 +185,9 @@ public class Service implements OrderService,  ObjectWithId {
     public static Service deserialize(String str) throws IOException{
         ObjectMapper mapper = new ObjectMapper();
         Service service = mapper.readValue(str, Service.class);
-        for(Map.Entry<Attribute, AttributeValue> entry: service.getParams().entrySet()){
+        for(Map.Entry<UUID, AttributeValue> entry: service.getParams().entrySet()){
             String val;
-            switch(entry.getKey().getType()){
+            switch(Specification.findAttributeById(entry.getKey()).getType()){
                 case DATE: val = entry.getValue().getValue();
                     entry.setValue(new AttributeValue());
                     entry.getValue().setType(Attribute.AttributeTypes.DATE);

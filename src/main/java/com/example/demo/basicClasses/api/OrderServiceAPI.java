@@ -14,18 +14,9 @@ import java.util.UUID;
 public class OrderServiceAPI {
     private static OrderServiceAPI instance;
 
-    private OrderServiceAPI(){
 
-    }
 
-    public static OrderServiceAPI getInstance(){
-        if (instance==null){
-            return new OrderServiceAPI();
-        }
-        else{
-            return instance;
-        }
-    }
+
 
     private Service createService(String name, Specification spec, Customer customer) {
         Service service = new Service(UUID.randomUUID(), name, Service.ServiceStatus.PLANNED, spec, customer);
@@ -43,14 +34,14 @@ public class OrderServiceAPI {
         order.setSpecification(spec);
         Integer servicesSize = Repo.getInstance().getAllOrders().size();
         order.setName("New "+spec.getName()+" Order#"+servicesSize);
-        order.setParams(new HashMap<Attribute, AttributeValue>());
+        order.setParams(new HashMap<UUID, AttributeValue>());
         servicesSize = Repo.getInstance().getAllServices().size();
         Service service = createService((spec.getName()+" Instance#"+ servicesSize), spec, customer);
         for (int i =0; i < mandatoryAttributeValues.size(); ++i){
             for (int j = 0; j < spec.getAttributes().size(); ++j){
                 if (spec.getAttributes().get(j).isMandatory()){
-                    order.getParams().put(spec.getAttributes().get(j), mandatoryAttributeValues.get(i));
-                    service.getParams().put(spec.getAttributes().get(j), mandatoryAttributeValues.get(i));
+                    order.getParams().put(spec.getAttributeIds().get(j), mandatoryAttributeValues.get(i));
+                    service.getParams().put(spec.getAttributes().get(j).getId(), mandatoryAttributeValues.get(i));
                 }
             }
         }
