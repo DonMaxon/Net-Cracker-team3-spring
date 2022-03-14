@@ -1,8 +1,9 @@
-package com.example.demo.basicClasses.repositories;
+package com.example.demo.basicClasses.services;
 
 import com.example.demo.basicClasses.api.exceptions.NotFoundException;
 
 import com.example.demo.basicClasses.entity.Service;
+import com.example.demo.basicClasses.repositories.ServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
