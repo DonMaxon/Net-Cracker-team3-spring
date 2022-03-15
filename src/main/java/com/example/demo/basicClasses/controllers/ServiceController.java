@@ -5,8 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import com.example.demo.basicClasses.entity.Service;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.UUID;
 
@@ -25,10 +23,5 @@ public class ServiceController {
     public void getService(UUID id){
         serviceService.findById(id);
     }
-    @PostMapping("/service/post")
-    public void postService(Service service){
-        serviceService.save(service);
-    }
-
 
 }
