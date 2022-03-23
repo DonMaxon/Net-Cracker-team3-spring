@@ -26,6 +26,7 @@ public class Attribute implements ObjectWithId {
     public enum AttributeTypes {DATE, NUMBER, STRING}
 
     @Id
+    @JsonIgnore
     private UUID id;
     @Column(name = "mandatority")
     private boolean isMandatory;

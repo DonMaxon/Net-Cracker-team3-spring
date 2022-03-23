@@ -22,6 +22,7 @@ public class Customer implements ObjectWithId {
 
     @Id
     @Column(name = "id")
+    @JsonIgnore
     private UUID id;
     @Column(name = "first_name")
     private String firstName;

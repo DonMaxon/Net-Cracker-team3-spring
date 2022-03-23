@@ -1,5 +1,6 @@
 package com.example.demo.basicClasses.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,6 +20,7 @@ public class ContactData {
 
     @Id
     @Column(name = "id")
+    @JsonIgnore
     private UUID id;
 
     @Column(name = "phone_number")

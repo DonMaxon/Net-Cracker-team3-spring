@@ -21,6 +21,7 @@ public class AvailableSpecializationsInLocation {
 
     public enum SpecializationsInLocationsStatuses {AVAILABLE, NOT_AVAILABLE}
 
+    @JsonIgnore
     private UUID id;
     @JsonIgnore
     private Specification specification;

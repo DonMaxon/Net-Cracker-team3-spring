@@ -14,10 +14,6 @@ import java.util.UUID;
 public class OrderServiceAPI {
     private static OrderServiceAPI instance;
 
-
-
-
-
     private Service createService(String name, Specification spec, Customer customer) {
         Service service = new Service(UUID.randomUUID(), name, Service.ServiceStatus.PLANNED, spec, customer);
         return service;
@@ -34,7 +30,6 @@ public class OrderServiceAPI {
         order.setSpecification(spec);
         Integer servicesSize = Repo.getInstance().getAllOrders().size();
         order.setName("New "+spec.getName()+" Order#"+servicesSize);
-        order.setParams(new HashMap<UUID, AttributeValue>());
         servicesSize = Repo.getInstance().getAllServices().size();
         Service service = createService((spec.getName()+" Instance#"+ servicesSize), spec, customer);
         for (int i =0; i < mandatoryAttributeValues.size(); ++i){

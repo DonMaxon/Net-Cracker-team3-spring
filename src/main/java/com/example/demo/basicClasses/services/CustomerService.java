@@ -8,7 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -38,6 +39,12 @@ public class CustomerService {
 
     public void deleteAll(){
         customerRepository.deleteAll();
+    }
+
+    public List<Customer> getAll(){
+        List<Customer> target = new ArrayList<>();
+        customerRepository.findAll().forEach(target::add);
+        return target;
     }
 
 }

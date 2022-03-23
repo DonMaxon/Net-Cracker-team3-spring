@@ -14,9 +14,8 @@ import java.util.UUID;
 
 @Service
 public class SpecificationAPI {
+
     private static SpecificationAPI instance;
-
-
 
     public Specification createSpecification(String name){
         return new Specification(UUID.randomUUID(), name);

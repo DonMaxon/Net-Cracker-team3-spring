@@ -47,7 +47,8 @@ public class Location implements ObjectWithId {
     }
 
     @Id
-    @JsonView(Views.firstSerialize.class)
+    //@JsonView(Views.firstSerialize.class)
+    @JsonIgnore
     private UUID id;
     @JsonView(Views.firstSerialize.class)
     @Column(name = "name")

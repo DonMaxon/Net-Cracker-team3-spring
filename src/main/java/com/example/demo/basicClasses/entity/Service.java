@@ -20,7 +20,9 @@ public class Service implements OrderService,  ObjectWithId {
 
     public enum ServiceStatus  {PLANNED, ACTIVE, DISCONNECTED};
 
+
     @Id
+    @JsonIgnore
     private UUID id;
     @Column(name = "name")
     private String name;

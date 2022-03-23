@@ -64,6 +64,9 @@ public  class Repo {
     }
 
     public static Repo getInstance() {
+        if (instance==null){
+            return getDefaultInstance();
+        }
         return instance;
     }
 

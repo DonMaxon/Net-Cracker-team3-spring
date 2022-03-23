@@ -25,6 +25,7 @@ import java.util.UUID;
 public class Specification implements ObjectWithId {
 
     @Id
+    @JsonIgnore
     private UUID id;
     @Column(name = "name")
     private String name;

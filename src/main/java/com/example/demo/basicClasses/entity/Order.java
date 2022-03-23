@@ -25,6 +25,7 @@ public class Order implements OrderService, ObjectWithId {
     public enum OrderAIM{NEW, MODIFY, DISCONNECT};
 
     @Id
+    @JsonIgnore
     private UUID id;
     @Column(name = "name")
     private String name;
