@@ -13,17 +13,19 @@ import java.io.IOException;
 import java.util.UUID;
 
 @Controller
-@RequestMapping("order")
+@RequestMapping("/order")
 public class OrderController {
 
     @Autowired
     OrderService orderService;
 
-    /*public ResponseEntity deleteOrder(@PathVariable("id") UUID id){
+    public ResponseEntity deleteOrder(@PathVariable("id") UUID id){
         orderService.delete(id);
         return new ResponseEntity(HttpStatus.ACCEPTED);
-    }*/
+    }
 
+    @RequestMapping(value = "/",
+            method = RequestMethod.GET)
     public Order getOrder(@PathVariable("id") UUID id){
         return orderService.findById(id);
     }

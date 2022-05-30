@@ -3,10 +3,11 @@ package com.example.demo.basicClasses.entity;
 
 import com.example.demo.basicClasses.Repo;
 
+import com.example.demo.basicClasses.deserializers.LocationDeserializer;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 
 import javax.persistence.*;
@@ -16,6 +17,7 @@ import java.util.*;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
+@JsonDeserialize(using = LocationDeserializer.class)
 @Table(name = "Location")
 @Access(AccessType.FIELD)
 public class Location implements ObjectWithId {
@@ -48,36 +50,50 @@ public class Location implements ObjectWithId {
 
     @Id
     //@JsonView(Views.firstSerialize.class)
-    @JsonIgnore
+    @JsonView(LocationViews.LocationWithoutParent.class)
     private UUID id;
-    @JsonView(Views.firstSerialize.class)
+    @JsonView(LocationViews.LocationWithoutParent.class)
     @Column(name = "name")
     private String name;
-    @JsonView(Views.firstSerialize.class)
+    @JsonView(LocationViews.LocationWithoutParent.class)
     @Column(name = "type")
     private Types type;
-    @JsonView(Views.secondSerialize.class)
-    @JsonIgnore
+    @JsonView(LocationViews.LocationWithParent.class)
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
-    @OneToOne
+    @ManyToOne
+    @JsonIgnore
     private Location parent;
 
-    public Location(){
+    @JsonView(LocationViews.LocationWithChildren.class)
+    @OneToMany(targetEntity = Location.class, mappedBy = "parent")
+    private List<Location> children;
 
+    public Location(){
+        children = new ArrayList<>();
+    }
+
+    public Location(UUID id) {
+        this.id = id;
+        children = new ArrayList<>();
+    }
+
+    public Location(String str){
+        this.id = UUID.fromString(str);
+        children = new ArrayList<>();
     }
 
     public Location(String name, Types t){
         this.id = UUID.randomUUID();
         this.name=name;
         type=t;
-
+        children = new ArrayList<>();
     }
 
     public Location(UUID id, String name, Types t){
         this.id = id;
         this.name=name;
         type=t;
-
+        children = new ArrayList<>();
     }
 
     public Location(UUID id, String name, Types t, Location loc){
@@ -85,8 +101,25 @@ public class Location implements ObjectWithId {
         this.name=name;
         type=t;
         parent = loc;
+        children = new ArrayList<>();
     }
 
+    public Location(String name, Types type, Location parent) {
+        this.id = UUID.randomUUID();
+        this.name = name;
+        this.type = type;
+        this.parent = parent;
+        children = new ArrayList<>();
+        parent.children.add(this);
+    }
+
+    public Location(UUID id, String name, Types type, Location parent, List<Location> children) {
+        this.id = id;
+        this.name = name;
+        this.type = type;
+        this.parent = parent;
+        this.children = children;
+    }
 
     public UUID getId() {
         return id;
@@ -120,6 +153,16 @@ public class Location implements ObjectWithId {
     @JsonIgnore
     public void setParent(Location parent) {
         this.parent = parent;
+    }
+
+    @JsonIgnore
+    public List<Location> getChildren(){
+        return children;
+    }
+
+    @JsonIgnore
+    public void setChildren(List<Location> children) {
+        this.children = children;
     }
 
     @Override
@@ -176,7 +219,7 @@ public class Location implements ObjectWithId {
     public String simpleSerialize() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         String result = mapper
-                .writerWithView(Views.secondSerialize.class)
+                .writerWithView(LocationViews.LocationWithParent.class)
                 .writeValueAsString(this);
         return result;
 
@@ -185,9 +228,12 @@ public class Location implements ObjectWithId {
     public static Location simpleDeserialize(String str) throws IOException{
         ObjectMapper mapper = new ObjectMapper();
         Location location = mapper
-                .readerWithView(Views.firstSerialize.class)
+                .readerWithView(LocationViews.LocationWithParent.class)
                 .forType(Location.class)
                 .readValue(str);
+        if (location.id == null) {
+            location.setId(UUID.randomUUID());
+        }
         return location;
     }
 
@@ -202,16 +248,22 @@ public class Location implements ObjectWithId {
                         locations.get(locations.size()-1)));
                 str = str.substring(findBracket(str)+1);
             }
+
         }
+
         return locations;
     }
 
     public boolean isBelongsTo(Location location){
-        if (this.equals(location)
-                ||this.getParent().equals(location)
-                ||this.parent.parent.equals(location)
-                ||this.parent.parent.parent.equals(location)){
-            return true;
+        try {
+            if (this.equals(location)
+                    || (this.getParent().equals(location))
+                    || (this.parent.parent.equals(location))
+                    || this.parent.parent.parent.equals(location)) {
+                return true;
+            }
+        }
+        catch (NullPointerException e){
         }
         return false;
     }
@@ -256,8 +308,8 @@ public class Location implements ObjectWithId {
 
 
     @JsonGetter
-    @JsonView(Views.secondSerialize.class)
-    private UUID getParentID(){
+    @JsonView(LocationViews.LocationWithParent.class)
+    public UUID getParentID(){
         if (parent!=null) {
             return this.parent.id;
         }
@@ -268,24 +320,15 @@ public class Location implements ObjectWithId {
 
 
     @JsonSetter
-    @JsonView(Views.secondSerialize.class)
-    private void setParentID(UUID id){
-        Repo repo = Repo.getInstance();
-        if (repo!=null&&repo.getLocations()!=null) {
-            for (int i = 0; i < repo.getLocations().size(); ++i) {
-                if (id.equals(repo.getLocations().get(i).getId())) {
-                    parent = repo.getLocations().get(i);
-                    return;
-                }
-            }
-        }
-        parent=new Location(id, null, null);
+    @JsonView(LocationViews.LocationWithParent.class)
+    public void setParentID(UUID id){
+        parent=new Location(id);
     }
 
     private String simpleSerializeWithoutID() throws JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
         String result = mapper
-                .writerWithView(Views.firstSerialize.class)
+                .writerWithView(LocationViews.LocationWithoutParent.class)
                 .writeValueAsString(this);
         return result;
     }
@@ -293,18 +336,22 @@ public class Location implements ObjectWithId {
     private static Location simpleDeserializeWithoutID(String str) throws IOException{
         ObjectMapper mapper = new ObjectMapper();
         Location location = mapper
-                .readerWithView(Views.firstSerialize.class)
+                .readerWithView(LocationViews.LocationWithoutParent.class)
                 .forType(Location.class)
                 .readValue(str);
         return location;
     }
 
-    private static class Views{
-        public static class firstSerialize{
+    public static class LocationViews {
+        public static class LocationWithoutParent {
 
         }
 
-        public static class secondSerialize extends firstSerialize{
+        public static class LocationWithParent extends LocationWithoutParent {
+
+        }
+
+        public static class LocationWithChildren extends  LocationWithoutParent{
 
         }
     }

@@ -44,12 +44,11 @@ public  class Repo {
                 specs.get(0), customers.get(0), Order.OrderStatus.ENTERING, Order.OrderAIM.NEW));
 
         specs.get(0).setAttributes(new ArrayList<>(0));
-        specs.get(0).getAttributes().add(new Attribute(UUID.randomUUID(),
+        /*specs.get(0).getAttributes().add(new Attribute(UUID.randomUUID(),
                 false, Attribute.AttributeTypes.STRING, "Speed", specs.get(0)));
         specs.get(0).getAttributes().add(new Attribute(UUID.randomUUID(),
-                true, Attribute.AttributeTypes.NUMBER, "Rate", specs.get(0)));
+                true, Attribute.AttributeTypes.NUMBER, "Rate", specs.get(0)));*/
         AttributeValue value = new AttributeValue();
-        value.setType(Attribute.AttributeTypes.NUMBER);
         value.setValue("2");
         customers.get(0).getServices().get(0).getParams().put(
                 specs.get(0).getAttributes().get(1).getId(),

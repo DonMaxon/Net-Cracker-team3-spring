@@ -1,14 +1,12 @@
 package com.example.demo.basicClasses.entity;
 
 
-import com.example.demo.basicClasses.Repo;
-
+import com.example.demo.basicClasses.deserializers.OrderDeserializer;
 import com.example.demo.basicClasses.entity.exceptions.OrderException;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.springframework.stereotype.Component;
 
 
 import javax.persistence.*;
@@ -17,6 +15,7 @@ import java.util.*;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonDeserialize(using = OrderDeserializer.class)
 @Entity
 @Table(name = "Orders")
 public class Order implements OrderService, ObjectWithId {
@@ -25,11 +24,13 @@ public class Order implements OrderService, ObjectWithId {
     public enum OrderAIM{NEW, MODIFY, DISCONNECT};
 
     @Id
-    @JsonIgnore
+    @JsonView(OrderAndServiceViews.WithoutCustomerID.class)
     private UUID id;
     @Column(name = "name")
+    @JsonView(OrderAndServiceViews.WithoutCustomerID.class)
     private String name;
     @Column(name = "description")
+    @JsonView(OrderAndServiceViews.WithoutCustomerID.class)
     private String description;
 
     @JsonIgnore
@@ -54,13 +55,15 @@ public class Order implements OrderService, ObjectWithId {
 
     @JsonDeserialize(keyUsing = Attribute.AttributeDeserializer.class)
     @Transient
+    @JsonIgnore
     private Map<UUID, AttributeValue> params;
 
-    @Transient
-    private List<AttributeValue> values;
 
     public Order() {
+        params = new HashMap<>();
     }
+
+
 
     public Order(UUID id){
         this.id = id;
@@ -73,6 +76,18 @@ public class Order implements OrderService, ObjectWithId {
         this.id = id;
         this.name = name;
         this.service = serviceId;
+        this.specification = specification;
+        this.customer = customer;
+        this.status = status;
+        this.aim = aim;
+        params = new HashMap<>();
+    }
+
+    public Order(UUID id, String name, String description, Service service, Specification specification, Customer customer, OrderStatus status, OrderAIM aim) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.service = service;
         this.specification = specification;
         this.customer = customer;
         this.status = status;
@@ -93,6 +108,7 @@ public class Order implements OrderService, ObjectWithId {
         this.params=params;
     }
 
+    @JsonIgnore
     public Map<UUID, AttributeValue> getParams() {
         if (status==OrderStatus.ENTERING) {
             return params;
@@ -158,13 +174,25 @@ public class Order implements OrderService, ObjectWithId {
     }
 
 
-    public OrderStatus getOrderStatus() {
+    public OrderStatus getStatus() {
         return status;
+    }
+
+    @JsonGetter
+    public ArrayList<AttributeValue> getAttributeValues(){
+        return new ArrayList<>(params.values());
+    }
+    @JsonSetter
+    public void setAttributeValues(List<AttributeValue> values){
+        params = new HashMap<>();
+        for (int i =0; i < values.size(); ++i){
+            params.put(values.get(i).getAttributeId(), values.get(i));
+        }
     }
 
     public void startOrder(){
         if (status==OrderStatus.ENTERING){
-            setOrderStatus(OrderStatus.IN_PROGRESS);
+            setStatus(OrderStatus.IN_PROGRESS);
         }
         else{
             throw new OrderException("Can not start order, status is not entering");
@@ -174,7 +202,7 @@ public class Order implements OrderService, ObjectWithId {
 
     public void completeOrder(){
         if (status==OrderStatus.IN_PROGRESS){
-            setOrderStatus(OrderStatus.COMPLETED);
+            setStatus(OrderStatus.COMPLETED);
         }
         else{
             throw new OrderException("Can not start order, status is not in progress");
@@ -182,7 +210,7 @@ public class Order implements OrderService, ObjectWithId {
 
     }
 
-    private void setOrderStatus(OrderStatus status) {
+    private void setStatus(OrderStatus status) {
         if (status == OrderStatus.COMPLETED&&aim==OrderAIM.NEW){
             service.setStatus(Service.ServiceStatus.ACTIVE);
         }
@@ -202,12 +230,12 @@ public class Order implements OrderService, ObjectWithId {
     }
 
 
-    public OrderAIM getOrderAim() {
+    public OrderAIM getAim() {
         return aim;
     }
 
 
-    public void setOrderAim(OrderAIM aim) {
+    public void setAim(OrderAIM aim) {
         this.aim = aim;
     }
 
@@ -258,23 +286,6 @@ public class Order implements OrderService, ObjectWithId {
     public static Order deserialize(String str) throws IOException{
         ObjectMapper mapper = new ObjectMapper();
         Order order = mapper.readValue(str, Order.class);
-        for(Map.Entry<UUID, AttributeValue> entry: order.getParams().entrySet()){
-            String val;
-            switch(Specification.findAttributeById(entry.getKey()).getType()){
-                case DATE: val = entry.getValue().getValue();
-                    entry.setValue(new AttributeValue());
-                    entry.getValue().setType(Attribute.AttributeTypes.DATE);
-                    entry.getValue().setValue(val);
-                    break;
-                case NUMBER: val = entry.getValue().getValue();
-                    entry.setValue(new AttributeValue());
-                    entry.getValue().setType(Attribute.AttributeTypes.NUMBER);
-                    entry.getValue().setValue(val);
-                    break;
-                case STRING:
-                    entry.getValue().setType(Attribute.AttributeTypes.STRING);
-            }
-        }
         return order;
     }
 
@@ -282,62 +293,36 @@ public class Order implements OrderService, ObjectWithId {
 
 
     @JsonGetter
-    private UUID getSpecificationID(){
+    @JsonView(OrderAndServiceViews.WithoutCustomerID.class)
+    public UUID getSpecificationID(){
         return specification.getId();
     }
 
     @JsonSetter
-    private void setSpecificationID(UUID specID){
-        Repo repo = Repo.getInstance();
-        if (repo!=null&&repo.getSpecs()!=null) {
-            for (int i = 0; i < repo.getSpecs().size(); ++i) {
-                if (repo.getSpecs().get(i).getId() != null &&
-                        repo.getSpecs().get(i).getId().equals(specID))
-                    specification = repo.getSpecs().get(i);
-                return;
-            }
-        }
+    public void setSpecificationID(UUID specID){
         specification=new Specification(specID);
     }
 
     @JsonGetter
-    private UUID getServiceID(){
+    @JsonView(OrderAndServiceViews.WithoutCustomerID.class)
+    public UUID getServiceID(){
         return service.getId();
     }
 
     @JsonSetter
-    private void setServiceID(UUID specID){
-        Repo repo = Repo.getInstance();
-        if (repo!=null&&repo.getCustomers()!=null) {
-            ArrayList<Service> allServices = repo.getAllServices();
-            for (int i = 0; i < allServices.size(); ++i) {
-                if (allServices.get(i).getId() != null &&
-                        allServices.get(i).getId().equals(specID))
-                    service = allServices.get(i);
-                return;
-            }
-        }
+    public void setServiceID(UUID specID){
         service=new Service(specID);
     }
 
     @JsonGetter
     @JsonView(OrderAndServiceViews.WithCustomerID.class)
-    private UUID getCustomerID(){
+    public UUID getCustomerID(){
         return customer.getId();
     }
 
     @JsonSetter
     @JsonView(OrderAndServiceViews.WithCustomerID.class)
-    private void setCustomerID(UUID specID){
-        Repo repo = Repo.getInstance();
-        if (repo!=null&&repo.getCustomers()!=null) {
-            for (int i = 0; i < repo.getCustomers().size(); ++i) {
-                if (repo.getCustomers().get(i).getId() != null &&
-                        repo.getCustomers().get(i).getId().equals(specID))
-                    customer = repo.getCustomers().get(i);
-                return;
-            }
-        }
+    public void setCustomerID(UUID specID){
         customer=new Customer(specID);
     }
 

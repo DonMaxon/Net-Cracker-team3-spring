@@ -2,9 +2,13 @@ package com.example.demo.basicClasses.entity;
 
 
 import com.example.demo.basicClasses.Repo;
+import com.example.demo.basicClasses.deserializers.CustomerDeserializer;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.springframework.stereotype.Component;
 
 
@@ -12,40 +16,49 @@ import javax.persistence.*;
 import java.io.IOException;
 import java.util.*;
 
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"id","firstName","lastName","contactData", "services", "orders", "locationId"})
 @Entity
+//@JsonDeserialize(using = CustomerDeserializer.class)
 @Table(name = "Customer")
 @Access(AccessType.FIELD)
 public class Customer implements ObjectWithId {
 
     @Id
     @Column(name = "id")
-    @JsonIgnore
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private UUID id;
     @Column(name = "first_name")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String firstName;
     @Column(name = "last_name")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String lastName;
 
     @JoinColumn(name = "contact_data")
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private ContactData contactData;
 
     @JoinColumn(name = "location")
     @OneToOne
     //@Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnore
     private Location location;
 
     @Column(name = "account_balance")
     private int accountBalance;
 
-    @OneToMany(mappedBy = "customer")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer")
     private List<Order> orders;
 
-    @OneToMany(mappedBy = "customer")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer")
     private List<Service> services;
+
+    @JoinColumn
+    @OneToOne
+    @JsonIgnore
+    private User user;
 
     public Customer(){
     }
@@ -65,6 +78,42 @@ public class Customer implements ObjectWithId {
         services = new ArrayList<>(0);
     }
 
+    public Customer(UUID id, String firstName, String lastName, ContactData contactData,
+                    Location location, int accountBalance, List<Order> orders, List<Service> services) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.contactData = contactData;
+        this.location = location;
+        this.accountBalance = accountBalance;
+        this.orders = orders;
+        this.services = services;
+    }
+
+    public Customer(UUID id, String firstName, String lastName,
+                    ContactData contactData, Location location, int accountBalance,
+                    List<Order> orders, List<Service> services, User user) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.contactData = contactData;
+        this.location = location;
+        this.accountBalance = accountBalance;
+        this.orders = orders;
+        this.services = services;
+        this.user = user;
+    }
+
+    public Customer(UUID id, String firstName, String lastName,
+                    ContactData contactData, Location location, int accountBalance, User user) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.contactData = contactData;
+        this.location = location;
+        this.accountBalance = accountBalance;
+        this.user = user;
+    }
 
     public UUID getId() {
         return id;
@@ -74,6 +123,23 @@ public class Customer implements ObjectWithId {
         this.id = id;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    @JsonGetter
+    public UUID getUserID() {
+        return user.getId();
+    }
+
+    @JsonSetter
+    public void setUserID(UUID uuid) {
+        user = new User(uuid);
+    }
 
     public ContactData getContactData() {
         return contactData;
@@ -166,13 +232,15 @@ public class Customer implements ObjectWithId {
         return Objects.hash(id, firstName, lastName, contactData, location, accountBalance, orders, services);
     }
 
-    public String serialize() throws JsonProcessingException {
+   /* public String serialize() throws JsonProcessingException {
         return new ObjectMapper().writerWithView(OrderAndServiceViews.WithoutCustomerID.class).writeValueAsString(this);
     }
 
     public static Customer deserialize(String str) throws IOException{
         ObjectMapper mapper = new ObjectMapper();
         Customer customer = mapper.readValue(str, Customer.class);
+        customer.orders = new ArrayList<>();
+        customer.services = new ArrayList<>();
         for (int i = 0; i < customer.orders.size(); ++i){
             customer.orders.get(i).getService().setCustomer(customer);
             customer.orders.get(i).setSpecification(customer.orders.get(i).getService().getSpecification());
@@ -189,30 +257,13 @@ public class Customer implements ObjectWithId {
                 entry.setValue(normalizeAttributeValues(Specification.findAttributeById(entry.getKey()), entry.getValue()));
             }
         }
-        return customer;
-    }
-
-    private static AttributeValue normalizeAttributeValues(Attribute key, AttributeValue value){
-
-        String val;
-        switch (key.getType()) {
-            case DATE:
-                val = value.getValue();
-                value = new AttributeValue();
-                value.setType(Attribute.AttributeTypes.DATE);
-                value.setValue(val);
-                break;
-            case NUMBER:
-                val = value.getValue();
-                value = new AttributeValue();
-                value.setType(Attribute.AttributeTypes.NUMBER);
-                value.setValue(val);
-                break;
-            case STRING:
-                value.setType(Attribute.AttributeTypes.STRING);
+        if (customer.id == null) {
+            customer.setId(UUID.randomUUID());
         }
-        return value;
-    }
+        return customer;
+    }*/
+
+
 
 
     @JsonGetter
@@ -222,17 +273,7 @@ public class Customer implements ObjectWithId {
 
     @JsonSetter
     public void setLocationId(UUID id){
-        Repo r = Repo.getInstance();
-        if (r!=null&&r.getLocations()!=null) {
-            for (int i = 0; i < r.getLocations().size(); ++i) {
-                if (id.equals(r.getLocations().get(i).getId())) {
-                    location = r.getLocations().get(i);
-                }
-            }
-        }
-        if (location==null)   {
-            location = new Location(id, null, null);
-        }
+        location =new Location(id);
     }
 
 

@@ -2,10 +2,12 @@ package com.example.demo.basicClasses.services;
 
 import com.example.demo.basicClasses.api.exceptions.NotFoundException;
 
+import com.example.demo.basicClasses.entity.Order;
 import com.example.demo.basicClasses.entity.Service;
 import com.example.demo.basicClasses.repositories.ServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,5 +47,11 @@ public class ServiceService {
         else{
             return serviceRepository.findById(id).get().getCustomer().getServices();
         }
+    }
+
+    public List<Service> getAll(){
+        List<Service> target = new ArrayList<>();
+        serviceRepository.findAll().forEach(target::add);
+        return target;
     }
 }

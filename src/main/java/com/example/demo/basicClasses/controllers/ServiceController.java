@@ -9,11 +9,12 @@ import com.example.demo.basicClasses.entity.Service;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.UUID;
 
 @Controller
-@RequestMapping("service")
+@RequestMapping("/service")
 public class ServiceController {
 
     @Autowired
@@ -24,6 +25,8 @@ public class ServiceController {
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }*/
 
+    @RequestMapping(value = "/",
+            method = RequestMethod.GET)
     public Service getService(@PathVariable("id") UUID id){
         return  serviceService.findById(id);
     }

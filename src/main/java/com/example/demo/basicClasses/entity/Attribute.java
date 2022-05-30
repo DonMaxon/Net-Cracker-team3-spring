@@ -2,9 +2,11 @@ package com.example.demo.basicClasses.entity;
 
 import com.example.demo.basicClasses.Repo;
 
+import com.example.demo.basicClasses.deserializers.AttributeDeserializer;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 
 import javax.persistence.*;
@@ -15,6 +17,7 @@ import java.util.UUID;
 
 @Entity
 @JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonDeserialize(using = AttributeDeserializer.class)
 @Table(name = "Attribute")
 @Access(AccessType.FIELD)
 public class Attribute implements ObjectWithId {
@@ -26,13 +29,16 @@ public class Attribute implements ObjectWithId {
     public enum AttributeTypes {DATE, NUMBER, STRING}
 
     @Id
-    @JsonIgnore
+    @JsonView(Attribute.AttributeViews.AttributeWithoutParent.class)
     private UUID id;
     @Column(name = "mandatority")
+    @JsonView(Attribute.AttributeViews.AttributeWithoutParent.class)
     private boolean isMandatory;
     @Column(name = "type")
+    @JsonView(Attribute.AttributeViews.AttributeWithoutParent.class)
     private AttributeTypes type;
     @Column(name = "name")
+    @JsonView(Attribute.AttributeViews.AttributeWithoutParent.class)
     private String name;
     @JoinColumn(name = "specification")
     @ManyToOne
@@ -44,7 +50,11 @@ public class Attribute implements ObjectWithId {
 
     }
 
-    public Attribute(UUID id,String name, AttributeTypes type, Specification specification) {
+    public Attribute(UUID id) {
+        this.id = id;
+    }
+
+    public Attribute(UUID id, String name, AttributeTypes type, Specification specification) {
         this.id = id;
         this.type = type;
         this.name = name;
@@ -58,7 +68,7 @@ public class Attribute implements ObjectWithId {
         this.name = name;
     }
 
-    public Attribute(UUID id, boolean isMandatory, AttributeTypes type, String name, Specification specification) {
+    public Attribute(UUID id, String name,boolean isMandatory, AttributeTypes type,  Specification specification) {
         this.id = id;
         this.isMandatory = isMandatory;
         this.type = type;
@@ -70,10 +80,12 @@ public class Attribute implements ObjectWithId {
         return id;
     }
 
-    public boolean isMandatory() {
+    @JsonIgnore
+    public boolean getMandatory() {
         return isMandatory;
     }
 
+    @JsonIgnore
     public void setMandatory(boolean mandatory) {
         isMandatory = mandatory;
     }
@@ -106,6 +118,7 @@ public class Attribute implements ObjectWithId {
         this.specification = specification;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -132,7 +145,7 @@ public class Attribute implements ObjectWithId {
                 '}';
     }
 
-    public String serialize() throws JsonProcessingException {
+    /*public String serialize() throws JsonProcessingException {
         return new ObjectMapper().writeValueAsString(this);
     }
 
@@ -141,7 +154,7 @@ public class Attribute implements ObjectWithId {
         Attribute attr = mapper.readValue(str, Attribute.class);
         return attr;
     }
-
+*/
     public static class AttributeDeserializer extends KeyDeserializer {
 
         @Override
@@ -185,12 +198,25 @@ public class Attribute implements ObjectWithId {
 
     //@Access(AccessType.PROPERTY)
     //@Column(name = "specificationID")
+    @JsonGetter
+    @JsonView(Attribute.AttributeViews.AttributeWithParent.class)
     private UUID getSpecificationId(){
         return specification.getId();
     }
 
+    @JsonSetter
     private void setSpecificationId(UUID id){
-        specification.setId(id);
+        specification = new Specification(id);
+    }
+
+    public static class AttributeViews {
+        public static class AttributeWithoutParent {
+
+        }
+
+        public static class AttributeWithParent extends AttributeWithoutParent {
+
+        }
     }
 
 }

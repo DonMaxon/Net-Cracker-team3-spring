@@ -1,9 +1,11 @@
 package com.example.demo.basicClasses.entity;
 
+import com.example.demo.basicClasses.deserializers.ContactDataDeserializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.springframework.stereotype.Component;
 
 
@@ -14,13 +16,13 @@ import java.util.UUID;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonDeserialize(using = ContactDataDeserializer.class)
 @Entity
 @Table(name = "Contact_data")
 public class ContactData {
 
     @Id
     @Column(name = "id")
-    @JsonIgnore
     private UUID id;
 
     @Column(name = "phone_number")
@@ -31,6 +33,9 @@ public class ContactData {
     public ContactData(){
     }
 
+    public ContactData(UUID id) {
+        this.id = id;
+    }
 
     public ContactData(UUID id, String num, String mail){
         this.id =id;
@@ -102,6 +107,9 @@ public class ContactData {
     public static ContactData deserialize(String str)throws IOException{
         ObjectMapper mapper = new ObjectMapper();
         ContactData contactData = mapper.readValue(str, ContactData.class);
+        if (contactData.id == null) {
+            contactData.setId(UUID.randomUUID());
+        }
         return contactData;
     }
 }

@@ -7,7 +7,6 @@ import com.example.demo.basicClasses.api.exceptions.CreatingException;
 import com.example.demo.basicClasses.entity.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.UUID;
 
 @org.springframework.stereotype.Service
@@ -26,7 +25,7 @@ public class OrderServiceAPI {
         }
         Order order = new Order(UUID.randomUUID());
         order.setCustomer(customer);
-        order.setOrderAim(Order.OrderAIM.NEW);
+        order.setAim(Order.OrderAIM.NEW);
         order.setSpecification(spec);
         Integer servicesSize = Repo.getInstance().getAllOrders().size();
         order.setName("New "+spec.getName()+" Order#"+servicesSize);
@@ -34,7 +33,7 @@ public class OrderServiceAPI {
         Service service = createService((spec.getName()+" Instance#"+ servicesSize), spec, customer);
         for (int i =0; i < mandatoryAttributeValues.size(); ++i){
             for (int j = 0; j < spec.getAttributes().size(); ++j){
-                if (spec.getAttributes().get(j).isMandatory()){
+                if (spec.getAttributes().get(j).getMandatory()){
                     order.getParams().put(spec.getAttributeIds().get(j), mandatoryAttributeValues.get(i));
                     service.getParams().put(spec.getAttributes().get(j).getId(), mandatoryAttributeValues.get(i));
                 }
@@ -50,7 +49,7 @@ public class OrderServiceAPI {
     public Order createOrderModify(Service service){
         checkOnActiveOrders(service);
         Order order = new Order(UUID.randomUUID());
-        order.setOrderAim(Order.OrderAIM.MODIFY);
+        order.setAim(Order.OrderAIM.MODIFY);
         Integer num = Repo.getInstance().getAllOrders().size();
         order.setName("Modify "+service.getSpecification().getName()+" Order#"+num);
         order.setService(service);
@@ -63,7 +62,7 @@ public class OrderServiceAPI {
     public Order createOrderDisconnect(Service service){
         checkOnActiveOrders(service);
         Order order = new Order(UUID.randomUUID());
-        order.setOrderAim(Order.OrderAIM.DISCONNECT);
+        order.setAim(Order.OrderAIM.DISCONNECT);
         order.setService(service);
         order.setCustomer(service.getCustomer());
         order.setSpecification(service.getSpecification());
@@ -76,7 +75,7 @@ public class OrderServiceAPI {
     private void checkOnActiveOrders(Service service){
         for (int i = 0; i < Repo.getInstance().getAllOrders().size(); ++i){
             if (Repo.getInstance().getAllOrders().get(i).getService().equals(service) &&
-                    Repo.getInstance().getAllOrders().get(i).getOrderStatus()!= Order.OrderStatus.COMPLETED){
+                    Repo.getInstance().getAllOrders().get(i).getStatus()!= Order.OrderStatus.COMPLETED){
                 throw new CreatingException("Service has active orders");
             }
         }

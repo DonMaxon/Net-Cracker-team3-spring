@@ -33,6 +33,11 @@ public class AttributeValueId implements Serializable {
         this.attribute = attribute;
     }
 
+    public AttributeValueId(Service service, Order order, Attribute attribute) {
+        this.service = service;
+        this.order = order;
+        this.attribute = attribute;
+    }
 
     public Service getService() {
         return service;

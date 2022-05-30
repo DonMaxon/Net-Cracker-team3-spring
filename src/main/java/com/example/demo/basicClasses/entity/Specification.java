@@ -1,12 +1,14 @@
 package com.example.demo.basicClasses.entity;
 
 import com.example.demo.basicClasses.Repo;
+import com.example.demo.basicClasses.deserializers.SpecificationDeserializer;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.springframework.stereotype.Component;
 
 
@@ -20,18 +22,17 @@ import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
-
+//@JsonDeserialize(using = SpecificationDeserializer.class)
 @Table(name="specification")
 public class Specification implements ObjectWithId {
 
     @Id
-    @JsonIgnore
     private UUID id;
     @Column(name = "name")
     private String name;
     @Column(name = "description")
     private String description;
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Attribute> attributes;
     @ManyToMany
     private List<Location> availableLocations;
@@ -70,6 +71,21 @@ public class Specification implements ObjectWithId {
         availableLocations = new ArrayList<>(0);
     }
 
+    public Specification(UUID id, String name, String description, List<Attribute> attributes) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.attributes = attributes;
+    }
+
+    public Specification(UUID id, String name, String description, List<Attribute> attributes, List<Location> availableLocations) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.attributes = attributes;
+        this.availableLocations = availableLocations;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -102,6 +118,7 @@ public class Specification implements ObjectWithId {
         this.attributes = attributes;
     }
 
+    @JsonIgnore
     public List<UUID> getAttributeIds(){
         ArrayList<UUID> attributeIds = new ArrayList<>(0);
         for (int i = 0; i < attributes.size(); ++i){
@@ -158,6 +175,9 @@ public class Specification implements ObjectWithId {
         for (int i =0; i <spec.attributes.size(); ++i) {
             spec.attributes.get(i).setSpecification(spec);
         }
+        if (spec.id == null) {
+            spec.setId(UUID.randomUUID());
+        }
         return spec;
     }
 
@@ -171,10 +191,11 @@ public class Specification implements ObjectWithId {
 
     }
 
+    @JsonIgnore
     public List<Attribute> getMandatoryAttribute(){
         List<Attribute> mandatoryAttributes = new ArrayList<>(0);
         for (int i = 0; i < attributes.size(); ++i){
-            if (attributes.get(i).isMandatory()) {
+            if (attributes.get(i).getMandatory()) {
                 mandatoryAttributes.add(attributes.get(i));
             }
         }
@@ -190,9 +211,11 @@ public class Specification implements ObjectWithId {
         return availableLocationIds;
     }
 
-    @JsonSetter
-    private void setAvailableLocationId(ArrayList<Location> locations) {
-        availableLocations=locations;
+    private void setAvailableLocationId(ArrayList<UUID> locationIds) {
+        availableLocations = new ArrayList<>();
+        for (int i =0; i < locationIds.size(); ++i){
+            availableLocations.add(new Location(locationIds.get(i)));
+        }
     }
 
 

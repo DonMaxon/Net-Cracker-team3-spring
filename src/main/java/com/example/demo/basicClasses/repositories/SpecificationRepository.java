@@ -9,4 +9,6 @@ import java.util.UUID;
 
 @Repository
 public interface SpecificationRepository extends CrudRepository<Specification, UUID> {
+
+    boolean existsByName(String name);
 }

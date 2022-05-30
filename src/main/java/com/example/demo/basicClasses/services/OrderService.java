@@ -4,20 +4,22 @@ import com.example.demo.basicClasses.api.OrderServiceAPI;
 import com.example.demo.basicClasses.api.exceptions.NotFoundException;
 import com.example.demo.basicClasses.entity.Order;
 import com.example.demo.basicClasses.repositories.OrderRepository;
+import com.example.demo.basicClasses.repositories.ServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 public class OrderService {
     private final OrderRepository orderRepository;
+    private final ServiceRepository serviceRepository;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository){
+    public OrderService(OrderRepository orderRepository, ServiceRepository serviceRepository) {
+        this.serviceRepository = serviceRepository;
         this.orderRepository = orderRepository;
     }
 
@@ -34,9 +36,16 @@ public class OrderService {
             throw new NotFoundException(id);
         }
         Order order = orderRepository.findById(id).get();
-        if (order.getOrderAim() == Order.OrderAIM.NEW && order.getOrderStatus() == Order.OrderStatus.ENTERING){
+        if (order.getAim() == Order.OrderAIM.NEW && order.getStatus() == Order.OrderStatus.ENTERING){
+            serviceRepository.deleteById(order.getService().getId());
+            orderRepository.deleteById(id);
+
         }
-        orderRepository.deleteById(id);
+        if (order.getStatus() == Order.OrderStatus.COMPLETED &&
+                (order.getAim() == Order.OrderAIM.MODIFY ||
+                        order.getAim() == Order.OrderAIM.DISCONNECT)) {
+            orderRepository.deleteById(id);
+        }
     }
 
     public Order findById(UUID id){
@@ -57,8 +66,10 @@ public class OrderService {
         }
     }
 
-
-
-
+    public List<Order> getAll(){
+        List<Order> target = new ArrayList<>();
+        orderRepository.findAll().forEach(target::add);
+        return target;
+    }
 
 }

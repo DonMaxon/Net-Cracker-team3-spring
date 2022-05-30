@@ -23,8 +23,8 @@ public class SpecificationService {
         this.specificationRepository = specificationRepository;
     }
 
-    public void save(Specification specification) {
-        specificationRepository.save(specification);
+    public Specification save(Specification specification) {
+        return specificationRepository.save(specification);
     }
 
     public void delete(UUID id){

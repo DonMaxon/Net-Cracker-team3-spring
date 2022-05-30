@@ -64,4 +64,15 @@ public class LocationService {
         locationRepository.deleteAll();
     }
 
+    public List<Location> getAll(){
+        List<Location> target = new ArrayList<>();
+        locationRepository.findAll().forEach(target::add);
+        return target;
+    }
+
+    public List<Location> findByType(Location.Types type){
+        return locationRepository.findByType(type);
+    }
+
+
 }

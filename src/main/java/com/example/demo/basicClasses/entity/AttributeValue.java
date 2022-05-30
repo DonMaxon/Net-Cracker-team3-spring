@@ -1,21 +1,27 @@
 package com.example.demo.basicClasses.entity;
 
+import com.example.demo.basicClasses.deserializers.AttributeValueDeserializer;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.springframework.data.annotation.AccessType;
 
 import javax.persistence.*;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.UUID;
 
 
 //@JsonSerialize(using = AttributeValue.AttributeValueSerializer.class)
 @Entity
 @Table(name = "attribute_value")
+@AccessType(AccessType.Type.PROPERTY)
+@JsonDeserialize(using = AttributeValueDeserializer.class)
 public class AttributeValue {
 
     @EmbeddedId
@@ -27,23 +33,77 @@ public class AttributeValue {
     private Integer integer;
     @JsonIgnore
     private String string;
-    @JsonIgnore
-    private Attribute.AttributeTypes type;
 
     public AttributeValue(){
 
     }
 
+    public AttributeValue(AttributeValueId attributeValueId) {
+        this.attributeValueId = attributeValueId;
+    }
+
+    public AttributeValue(AttributeValueId attributeValueId, String string) {
+        this.attributeValueId = attributeValueId;
+        this.string = string;
+    }
+
+    @JsonIgnore
     public AttributeValueId getAttributeValueId() {
         return attributeValueId;
     }
 
+    @JsonIgnore
     public void setAttributeValueId(AttributeValueId attributeValueId) {
         this.attributeValueId = attributeValueId;
     }
 
-    public void setType(Attribute.AttributeTypes type){
-        this.type=type;
+    @JsonGetter
+    @JsonView(OrderAndServiceViews.WithoutCustomerID.class)
+    public UUID getAttributeId() {
+        return attributeValueId.getAttribute().getId();
+    }
+
+    @JsonSetter
+    public void setAttributeId(UUID attributeId) {
+        this.attributeValueId = attributeValueId;
+    }
+
+    @JsonGetter
+    @JsonView(AttributeValue.ValueViews.ValueWithOrderService.class)
+    public UUID getServiceId(){
+        if (attributeValueId.getService()!=null) {
+            return attributeValueId.getService().getId();
+        }
+        return null;
+    }
+
+    @JsonSetter
+    public void setServiceId(UUID id){
+        if (attributeValueId.getService()!=null) {
+            attributeValueId.getService().setId(id);
+        }
+        else {
+            attributeValueId.setService(new Service(id));
+        }
+    }
+
+    @JsonGetter
+    @JsonView(AttributeValue.ValueViews.ValueWithOrderService.class)
+    public UUID getOrderId(){
+        if (attributeValueId.getOrder()!=null) {
+            return attributeValueId.getOrder().getId();
+        }
+        return null;
+    }
+
+    @JsonSetter
+    public void setOrderId(UUID id){
+        if (attributeValueId.getOrder()!=null) {
+            attributeValueId.getService().setId(id);
+        }
+        else {
+            attributeValueId.setOrder(new Order(id));
+        }
     }
 
     @Override
@@ -53,28 +113,22 @@ public class AttributeValue {
         AttributeValue that = (AttributeValue) o;
         return Objects.equals(date, that.date) &&
                 Objects.equals(integer, that.integer) &&
-                Objects.equals(string, that.string) &&
-                type == that.type;
+                Objects.equals(string, that.string);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(date, integer, string, type);
+        return Objects.hash(date, integer, string);
     }
 
     @JsonGetter
     @Column(name = "value")
     public String getValue(){
-        try {
-            switch (type) {
-                case DATE:
-                    return date.toString();
-                case NUMBER:
-                    return integer.toString();
-            }
+        if (date!=null){
+            return date.toString();
         }
-        catch (NullPointerException e){
-
+        if (integer!=null){
+            return integer.toString();
         }
         return string;
     }
@@ -82,11 +136,11 @@ public class AttributeValue {
 
     @JsonSetter
     public void setValue(String str){
-        if (type==null){
+        if (attributeValueId.getAttribute().getType()==null){
             this.string =str;
             return;
         }
-        switch (type){
+        switch (attributeValueId.getAttribute().getType()){
             case DATE:
                 date = LocalDate.parse(str);
                 return;
@@ -98,17 +152,17 @@ public class AttributeValue {
         this.string =str;
     }
 
-    public String serialize() throws JsonProcessingException {
-        return new ObjectMapper().writeValueAsString(this);
+
+    public static class ValueViews {
+
+        public static class ValueWithoutOrderService extends OrderAndServiceViews.WithCustomerID{
+
+        }
+
+        public static class ValueWithOrderService extends ValueWithoutOrderService {
+
+        }
+
     }
-
-    @JsonDeserialize
-    public static AttributeValue deserialize(String str) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        AttributeValue attributeValue = mapper.readValue(str, AttributeValue.class);
-        return attributeValue;
-    }
-
-
 
 }
