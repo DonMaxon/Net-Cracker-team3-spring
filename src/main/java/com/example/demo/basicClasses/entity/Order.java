@@ -275,13 +275,9 @@ public class Order implements OrderService, ObjectWithId {
                 '}';
     }
 
-
-
     public String serialize() throws JsonProcessingException{
         return new ObjectMapper().writeValueAsString(this);
     }
-
-
 
     public static Order deserialize(String str) throws IOException{
         ObjectMapper mapper = new ObjectMapper();
@@ -289,8 +285,9 @@ public class Order implements OrderService, ObjectWithId {
         return order;
     }
 
-
-
+    public void addValue(AttributeValue attributeValue){
+        params.put(attributeValue.getAttributeId(), attributeValue);
+    }
 
     @JsonGetter
     @JsonView(OrderAndServiceViews.WithoutCustomerID.class)

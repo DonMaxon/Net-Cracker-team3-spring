@@ -7,7 +7,7 @@
 </head>
 <body>
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" th:fragment="one_spec">
-    <h2>Section title</h2>
+    <h2><a th:text="${specifications.name}">Specification</a></h2>
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Main information</button>
@@ -30,7 +30,8 @@
             <div th:replace="table_attributes :: table_attributes"></div>
         </div>
         <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
-            <div th:replace="table_locations:: table_locations_one"></div>
+            <a th:href="@{/add_location(spec=${specifications.id})}">Add location</a>
+            <div th:replace="table_locations_spec:: table_locations_spec"></div>
         </div>
     </div>
 </main>

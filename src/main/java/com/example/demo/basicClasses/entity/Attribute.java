@@ -2,11 +2,8 @@ package com.example.demo.basicClasses.entity;
 
 import com.example.demo.basicClasses.Repo;
 
-import com.example.demo.basicClasses.deserializers.AttributeDeserializer;
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 
 import javax.persistence.*;
@@ -81,12 +78,12 @@ public class Attribute implements ObjectWithId {
     }
 
     @JsonIgnore
-    public boolean getMandatory() {
+    public boolean getMandatority() {
         return isMandatory;
     }
 
     @JsonIgnore
-    public void setMandatory(boolean mandatory) {
+    public void setMandatority(boolean mandatory) {
         isMandatory = mandatory;
     }
 
@@ -164,7 +161,7 @@ public class Attribute implements ObjectWithId {
             String strID = s.substring(s.indexOf('=')+1, s.indexOf(','));
             attribute.setId(UUID.fromString(strID));
             String strMandatory = s.substring(s.indexOf("isMandatory")+12, s.indexOf("type")-2);
-            attribute.setMandatory(Boolean.parseBoolean(strMandatory));
+            attribute.setMandatority(Boolean.parseBoolean(strMandatory));
             String strType = s.substring(s.indexOf("type")+5, s.indexOf("name")-2);
             switch (strType) {
                 case "NUMBER":

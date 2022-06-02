@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.security.access.AccessDeniedException;
+import org.w3c.dom.Attr;
 
 
 import java.util.ArrayList;
@@ -33,6 +34,8 @@ public class WebController {
     UserService userService;
     @Autowired
     LocationService locationService;
+    @Autowired
+    AttributeService attributeService;
 
     private boolean checkOnAdmin(){
         User user = (User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -232,6 +235,25 @@ public class WebController {
         return "redirect:/one_location?location="+location.getId().toString();
     }
 
+    @GetMapping("/new_spec")
+    public String newSpec(Model model){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        model.addAttribute("spec", new Specification());
+        return "new_spec";
+    }
+
+    @PostMapping("/new_spec")
+    public String newSpecPost(Model model, @ModelAttribute Specification specification){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        specification.setId(UUID.randomUUID());
+        specificationService.save(specification);
+        return "redirect:/admin_one_spec?spec="+specification.getId().toString();
+    }
+
     @GetMapping("/update_location")
     public String updLocation(@RequestParam(value = "location") UUID uuid, Model model){
         model.addAttribute("location", locationService.findById(uuid));
@@ -244,6 +266,105 @@ public class WebController {
         location1.setName(location.getName());
         locationService.save(location1);
         return "redirect:/one_location?location="+location.getId().toString();
+    }
+
+    @GetMapping("/update_spec")
+    public String updSpec(@RequestParam(value = "spec") UUID uuid, Model model){
+        model.addAttribute("spec", specificationService.findById(uuid));
+        return "update_spec";
+    }
+
+    @PostMapping("/update_spec")
+    public String updSpecPost(@RequestParam(value = "spec") UUID uuid, Model model, @ModelAttribute Specification specification){
+        Specification spec = specificationService.findById(uuid);
+        spec.setName(specification.getName());
+        spec.setDescription(specification.getDescription());
+        specificationService.save(spec);
+        return "redirect:/admin_one_spec?spec="+spec.getId().toString();
+    }
+
+    @GetMapping("/change_user_status")
+    public String changeUserStatus(@RequestParam(value = "user") UUID uuid, Model model){
+        User user = userService.findById(uuid);
+        user.changeStatus();
+        userService.save(user);
+        return "redirect:/admin_users";
+    }
+
+    @GetMapping("/new_attribute")
+    public String newAttribute(@RequestParam(value = "spec") UUID uuid, Model model){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        model.addAttribute("attribute", new Attribute());
+        model.addAttribute("spec", specificationService.findById(uuid));
+        return "new_attribute";
+    }
+
+    @PostMapping("/new_attribute")
+    public String newAttributePost(@RequestParam(value = "spec") UUID uuid, Model model, @ModelAttribute Attribute attribute){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        attribute.setId(UUID.randomUUID());
+        Specification specification = specificationService.findById(uuid);
+        attribute.setSpecification(specification);
+        try {
+            specification.addAttribute(attribute);
+        }
+        catch (InstantiationException e){
+            return "redirect:/admin_one_spec?spec="+specificationService.findById(uuid).getId().toString();
+        }
+        specificationService.save(specification);
+        return "redirect:/admin_one_spec?spec="+specificationService.findById(uuid).getId().toString();
+    }
+
+    @GetMapping("/add_location")
+    public String addLocation(@RequestParam(value = "spec") UUID uuid, Model model){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        model.addAttribute("spec", specificationService.findById(uuid));
+        model.addAttribute("locations", locationService.getAll());
+        model.addAttribute("newLocation", new Location());
+        return "add_location";
+    }
+
+    @PostMapping("/add_location")
+    public String addLocationPost(@RequestParam(value = "spec") UUID uuid, Model model, @ModelAttribute Location location){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        Specification specification = specificationService.findById(uuid);
+        specification.addLocation(location);
+        specificationService.save(specification);
+        return "redirect:/admin_one_spec?spec="+specificationService.findById(uuid).getId().toString();
+    }
+
+    @GetMapping("/del_location_from_spec")
+    public String delLocationFromSpec(@RequestParam(value = "spec") UUID spec_uuid, @RequestParam("location") UUID location_uuid, Model model){
+        Specification specification = specificationService.findById(spec_uuid);
+        specification.deleteLocation(locationService.findById(location_uuid));
+        specificationService.save(specification);
+        return "redirect:/admin_one_spec?spec="+spec_uuid.toString();
+    }
+
+    @GetMapping("/new_value")
+    public String newValue(@RequestParam(value = "order") UUID uuid, Model model){
+        model.addAttribute("order", orderService.findById(uuid));
+        model.addAttribute("value", new AttributeValue());
+        model.addAttribute("attributes", orderService.findById(uuid).getSpecification().getAttributes());
+        return "new_value";
+    }
+
+    @PostMapping("/new_value")
+    public String newValuePost(@RequestParam(value = "order") UUID uuid, Model model, @ModelAttribute AttributeValue attributeValue){
+        Order order = orderService.findById(uuid);
+        order.addValue(attributeValue);
+        attributeValue.setAttributeValueId(new AttributeValueId(order,
+                attributeService.findById(attributeValue.getAttributeId())));
+        orderService.save(order);
+        return "redirect:/admin_one_order?order="+uuid.toString();
     }
 
 }

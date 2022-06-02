@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-@Controller
-@RequestMapping("/customer")
+@RestController
+@RequestMapping("/api/customer")
 public class CustomerController {
 
     @Autowired
@@ -38,7 +38,7 @@ public class CustomerController {
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 
-    @RequestMapping(value = "/",
+    @RequestMapping(value = "/{id}",
             method = RequestMethod.GET)
     public Customer getCustomer(@PathVariable("id") UUID id){
         return customerService.findById(id);

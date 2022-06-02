@@ -1,15 +1,11 @@
 package com.example.demo.basicClasses.entity;
 
 import com.example.demo.basicClasses.Repo;
-import com.example.demo.basicClasses.deserializers.SpecificationDeserializer;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.springframework.stereotype.Component;
 
 
 import javax.persistence.*;
@@ -188,14 +184,33 @@ public class Specification implements ObjectWithId {
         Attribute attribute = AttributeFactory.createAttribute(name, isMandatory, type);
         attribute.setSpecification(this);
         attributes.add(attribute);
+    }
 
+    public void addAttribute(Attribute attribute)throws InstantiationException{
+        if (!isCorrectName(attribute.getName())){
+            throw new InstantiationException("Error during adding attribute, name is not correct");
+        }
+        attributes.add(attribute);
+    }
+
+    public void addLocation(Location location){
+        if (availableLocations.contains(location)){
+            return;
+        }
+        else{
+            availableLocations.add(location);
+        }
+    }
+
+    public void deleteLocation(Location location){
+        availableLocations.remove(location);
     }
 
     @JsonIgnore
     public List<Attribute> getMandatoryAttribute(){
         List<Attribute> mandatoryAttributes = new ArrayList<>(0);
         for (int i = 0; i < attributes.size(); ++i){
-            if (attributes.get(i).getMandatory()) {
+            if (attributes.get(i).getMandatority()) {
                 mandatoryAttributes.add(attributes.get(i));
             }
         }

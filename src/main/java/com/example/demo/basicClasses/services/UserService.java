@@ -1,8 +1,10 @@
 package com.example.demo.basicClasses.services;
 
 import com.example.demo.basicClasses.api.exceptions.NotFoundException;
+import com.example.demo.basicClasses.entity.Customer;
 import com.example.demo.basicClasses.entity.Specification;
 import com.example.demo.basicClasses.entity.User;
+import com.example.demo.basicClasses.repositories.CustomerRepository;
 import com.example.demo.basicClasses.repositories.SpecificationRepository;
 import com.example.demo.basicClasses.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +21,12 @@ import java.util.UUID;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository){
+    public UserService(UserRepository userRepository, CustomerRepository customerRepository){
         this.userRepository = userRepository;
+        this.customerRepository = customerRepository;
     }
 
     public User save(User user) {
@@ -51,5 +55,11 @@ public class UserService implements UserDetailsService {
         List<User> target = new ArrayList<>();
         userRepository.findAll().forEach(target::add);
         return target;
+    }
+
+    public Customer findByUser(User user){
+
+       Customer customer = customerRepository.findByUser(user);
+       return customer;
     }
 }

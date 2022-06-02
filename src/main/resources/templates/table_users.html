@@ -14,7 +14,9 @@
             <tr>
                 <th scope="col">Login</th>
                 <th scope="col">IsAdmin</th>
-                <th scope = "col">Enabled</th>
+                <th scope = "col">Status</th>
+                <th scope = "col">Customer</th>
+                <th scope = "col">Change status</th>
             </tr>
             </thead>
             <tbody>
@@ -22,6 +24,8 @@
                 <td th:utext="${inf.login}">Login</td>
                 <td th:utext="${inf.isAdmin}">IsAdmin</td>
                 <td th:utext="${inf.enabled}">Enabled</td>
+                <td><a th:utext="${inf.customer?.firstName}+' '+${inf.customer?.lastName}" th:href="@{/admin_one_customer(customer=${inf.customer?.id})}">Customer</a></td>
+                <td><a class="delete_text" th:href="@{/change_user_status(user=${inf.id})}" style = "color:green">Change status</a></td>
             </tr>
             </tbody>
         </table>

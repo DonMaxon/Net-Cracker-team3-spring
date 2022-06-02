@@ -33,7 +33,7 @@ public class OrderServiceAPI {
         Service service = createService((spec.getName()+" Instance#"+ servicesSize), spec, customer);
         for (int i =0; i < mandatoryAttributeValues.size(); ++i){
             for (int j = 0; j < spec.getAttributes().size(); ++j){
-                if (spec.getAttributes().get(j).getMandatory()){
+                if (spec.getAttributes().get(j).getMandatority()){
                     order.getParams().put(spec.getAttributeIds().get(j), mandatoryAttributeValues.get(i));
                     service.getParams().put(spec.getAttributes().get(j).getId(), mandatoryAttributeValues.get(i));
                 }

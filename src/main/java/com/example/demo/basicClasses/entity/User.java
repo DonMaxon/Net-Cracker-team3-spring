@@ -1,20 +1,22 @@
 package com.example.demo.basicClasses.entity;
 
+import com.example.demo.basicClasses.services.UserService;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Collection;
 import java.util.UUID;
 
 @Entity
 @Table(name = "Users")
 public class User implements UserDetails, CredentialsContainer {
+
+
 
     @Id
     @Column(name = "id")
@@ -28,6 +30,14 @@ public class User implements UserDetails, CredentialsContainer {
 
     @Column(name = "password")
     private String password;
+
+    @Column(name = "active")
+    private boolean active;
+
+    @JoinColumn
+    @OneToOne
+    @JsonIgnore
+    private Customer customer;
 
     public User() {
     }
@@ -50,6 +60,14 @@ public class User implements UserDetails, CredentialsContainer {
 
     public User(boolean isAdmin) {
         this.isAdmin = isAdmin;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
     public UUID getId() {
@@ -121,7 +139,7 @@ public class User implements UserDetails, CredentialsContainer {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return active;
     }
 
     @Override
@@ -133,4 +151,21 @@ public class User implements UserDetails, CredentialsContainer {
                 ", password='" + password + '\'' +
                 '}';
     }
+
+    public boolean getActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public void changeStatus(){
+        if (active==true){
+            active=false;
+            return;
+        }
+        active=true;
+    }
+
 }
