@@ -8,6 +8,7 @@
 <body>
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" th:fragment="table_users">
     <h2>Section title</h2>
+    <a th:href="@{/new_user}">Create</a>
     <div class="table-responsive" >
         <table class="table table-striped table-sm">
             <thead>
@@ -17,15 +18,19 @@
                 <th scope = "col">Status</th>
                 <th scope = "col">Customer</th>
                 <th scope = "col">Change status</th>
+                <th scope = "col">Actions</th>
+
             </tr>
             </thead>
             <tbody>
             <tr th:each="inf: ${users}">
                 <td th:utext="${inf.login}">Login</td>
-                <td th:utext="${inf.isAdmin}">IsAdmin</td>
+                <td th:utext="${inf.admin}">IsAdmin</td>
                 <td th:utext="${inf.enabled}">Enabled</td>
                 <td><a th:utext="${inf.customer?.firstName}+' '+${inf.customer?.lastName}" th:href="@{/admin_one_customer(customer=${inf.customer?.id})}">Customer</a></td>
                 <td><a class="delete_text" th:href="@{/change_user_status(user=${inf.id})}" style = "color:green">Change status</a></td>
+                <td><a class="delete_text" th:href="@{/del_user(user=${inf.id})}" style = "color:red">Delete</a>
+                    <a class="update_text" th:href="@{/update_user(user=${inf.id})}" style = "color:green">Update</a></td>
             </tr>
             </tbody>
         </table>

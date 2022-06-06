@@ -123,8 +123,6 @@ public class Order implements OrderService, ObjectWithId {
 
     }
 
-
-
     public UUID getId() {
         return id;
     }

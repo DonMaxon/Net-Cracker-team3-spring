@@ -38,24 +38,34 @@
 
     <div class="py-5 text-center">
         <img class="d-block mx-auto mb-4" src="../assets/brand/bootstrap-logo.svg" alt="" width="72" height="57">
-        <h2>Checkout form</h2>
+        <h2>New user</h2>
         <p class="lead">Below is an example form built entirely with Bootstrap’s form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p>
     </div>
-    <form method="post" th:object="${value}" th:action="@{/new_value(order=${order.id})}">
+    <form method="post" th:object="${user}" th:action="@{/new_user}">
         <div class="row g-5 mx-auto" >
             <div class="col-md-7 col-lg-8 mx-auto">
-                <h4 class="mb-3" style="text-align:center">Enter new value</h4>
+                <h4 class="mb-3" style="text-align:center">Enter parameters of new user</h4>
                 <form class="needs-validation" novalidate>
                     <div class="row g-3">
                         <div class="col-sm-6 w-100">
-                            <label for="firstName" class="form-label">Available attributes</label>
-                            <select class = "new_info_input" required="required" th:field="*{attributeValueId.attribute}">
-                                <option  th:each="inf : ${attributes}" th:text="${inf.name}" th:value="${inf.id}">Locations</option>
+                            <label for="firstName" class="form-label">Login</label>
+                            <input type="text" class="form-control" id="firstName" placeholder="" value="" required="required" th:field="*{login}">
+                            <label for="firstName" class="form-label">Password</label>
+                            <input type="text" class="form-control" id="lastName" placeholder="" value="" required="required" th:field="*{password}">
+                            <br>
+                            <label for="firstName" class="form-label">Admin</label>
+                            <select class="form-control" th:field="*{admin}">
+                                <option th:value="1" >true</option>
+                                <option th:value="0" >false</option>
                             </select>
                             <br>
-                            <label for="firstName" class="form-label">Value</label>
-                            <input type="text" class="form-control" id="firstName" placeholder="" value="" required="required" th:field="*{value}">
-                           <div class="invalid-feedback">
+                            <br>
+                            <label for="firstName" class="form-label">Customer</label>
+                            <select class = "new_info_input" required="required" th:field="*{customer}">
+                                <option  th:each="inf : ${customers}" th:text="${inf.firstName}+' '+${inf.lastName}" th:value="${inf.id}">Customers</option>
+                                <option  th:text="Nobody" th:value="${null}">Nobody</option></select>
+                            <br>
+                            <div class="invalid-feedback">
                                 Valid name is required.
                             </div>
                         </div>

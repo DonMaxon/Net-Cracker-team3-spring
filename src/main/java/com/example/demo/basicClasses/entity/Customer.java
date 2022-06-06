@@ -63,6 +63,10 @@ public class Customer implements ObjectWithId {
     public Customer(){
     }
 
+    public Customer(ContactData contactData){
+        this.contactData=contactData;
+    }
+
     public Customer(UUID id){
         this.id=id;
     }

@@ -1,6 +1,7 @@
 package com.example.demo.basicClasses.controllers;
 
 import com.example.demo.basicClasses.entity.*;
+import com.example.demo.basicClasses.entity.exceptions.OrderException;
 import com.example.demo.basicClasses.services.*;
 import com.example.demo.basicClasses.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +13,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.security.access.AccessDeniedException;
-import org.w3c.dom.Attr;
 
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,10 +35,14 @@ public class WebController {
     LocationService locationService;
     @Autowired
     AttributeService attributeService;
+    @Autowired
+    AttributeValueService attributeValueService;
+    @Autowired
+    ContactDataService contactDataService;
 
     private boolean checkOnAdmin(){
         User user = (User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (user.isAdmin()){
+        if (user.getAdmin()){
             return true;
         }
         return false;
@@ -343,6 +346,9 @@ public class WebController {
 
     @GetMapping("/del_location_from_spec")
     public String delLocationFromSpec(@RequestParam(value = "spec") UUID spec_uuid, @RequestParam("location") UUID location_uuid, Model model){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
         Specification specification = specificationService.findById(spec_uuid);
         specification.deleteLocation(locationService.findById(location_uuid));
         specificationService.save(specification);
@@ -351,6 +357,9 @@ public class WebController {
 
     @GetMapping("/new_value")
     public String newValue(@RequestParam(value = "order") UUID uuid, Model model){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
         model.addAttribute("order", orderService.findById(uuid));
         model.addAttribute("value", new AttributeValue());
         model.addAttribute("attributes", orderService.findById(uuid).getSpecification().getAttributes());
@@ -359,12 +368,171 @@ public class WebController {
 
     @PostMapping("/new_value")
     public String newValuePost(@RequestParam(value = "order") UUID uuid, Model model, @ModelAttribute AttributeValue attributeValue){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
         Order order = orderService.findById(uuid);
         order.addValue(attributeValue);
-        attributeValue.setAttributeValueId(new AttributeValueId(order,
+        attributeValue.setAttributeValueId(new AttributeValueId(order.getService(), order,
                 attributeService.findById(attributeValue.getAttributeId())));
+        attributeValueService.save(attributeValue);
         orderService.save(order);
         return "redirect:/admin_one_order?order="+uuid.toString();
+    }
+
+    @GetMapping("/change_status")
+    public String newValuePost(@RequestParam(value = "order") UUID uuid, Model model){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        Order order = orderService.findById(uuid);
+        try {
+            if (order.getStatus() == Order.OrderStatus.ENTERING) {
+                order.startOrder();
+            } else {
+                order.completeOrder();
+            }
+            orderService.save(order);
+            serviceService.save(order.getService());
+        }
+        catch (OrderException e){
+
+        }
+        return "redirect:/admin_one_order?order="+uuid.toString();
+    }
+
+    @GetMapping("/new_order")
+    public String newOrder(Model model){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        model.addAttribute("order", new Order());
+        model.addAttribute("customers", customerService.getAll());
+        model.addAttribute("specs", specificationService.getAll());
+        model.addAttribute("services", serviceService.getAll());
+        return "new_order";
+    }
+
+    @GetMapping("new_customer")
+    public String newCustomer (Model model){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        model.addAttribute("customer", new Customer(new ContactData()));
+        model.addAttribute("locations", locationService.findByType(Location.Types.ADDRESS));
+        model.addAttribute("users", userService.getAll());
+        return "new_customer";
+    }
+
+    @PostMapping("new_customer")
+    public String newCustomerPost (Model model, @ModelAttribute Customer customer){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        customer.setId(UUID.randomUUID());
+        customer.getContactData().setId(UUID.randomUUID());
+        contactDataService.save(customer.getContactData());
+        customerService.save(customer);
+        if (customer.getUser()!=null) {
+            customer.getUser().setCustomer(customer);
+            userService.save(customer.getUser());
+        }
+        return "redirect:/admin_one_customer?customer="+customer.getId().toString();
+    }
+
+    @GetMapping("new_user")
+    public String newUser (Model model){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        model.addAttribute("user", new User());
+        model.addAttribute("customers", customerService.getAll());
+
+        return "new_user";
+    }
+
+    @PostMapping("new_user")
+    public String newUserPost (Model model, @ModelAttribute User user){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        user.setId(UUID.randomUUID());
+        user.setActive(false);
+        userService.save(user);
+        if (user.getCustomer()!=null) {
+            user.getCustomer().setUser(user);
+            customerService.save(user.getCustomer());
+        }
+        return "redirect:/admin_users";
+    }
+
+    @GetMapping("/del_customer")
+    public String delCustomer(@RequestParam("customer") UUID uuid, Model model){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        customerService.delete(uuid);
+        return "redirect:/admin_customer";
+    }
+
+    @GetMapping("/del_user")
+    public String delUser(@RequestParam("user") UUID uuid, Model model){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        userService.delete(uuid);
+        return "redirect:/admin_users";
+    }
+
+    @GetMapping("/update_customer")
+    public String updateCustomer(@RequestParam("customer") UUID uuid, Model model){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        model.addAttribute("customer", customerService.findById(uuid));
+        model.addAttribute("locations", locationService.findByType(Location.Types.ADDRESS));
+        model.addAttribute("users", userService.getAll());
+        return "update_customer";
+    }
+
+    @PostMapping("/update_customer")
+    public String updateCustomerPost(@RequestParam("customer") UUID uuid, Model model, @ModelAttribute Customer newCustomer){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        newCustomer.setId(uuid);
+        if (newCustomer.getUser()!=null){
+            User user = newCustomer.getUser();
+            user.setCustomer(newCustomer);
+            userService.save(user);
+        }
+        customerService.save(newCustomer);
+        return "redirect:/admin_one_customer?customer="+uuid.toString();
+    }
+
+    @GetMapping("/update_user")
+    public String updateUser(@RequestParam("user") UUID uuid, Model model){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        model.addAttribute("user", userService.findById(uuid));
+        model.addAttribute("customers", customerService.getAll());
+        return "update_user";
+    }
+
+    @PostMapping("/update_user")
+    public String updateUserPost(@RequestParam("user") UUID uuid, Model model, @ModelAttribute User newUser){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        newUser.setId(uuid);
+        if (newUser.getCustomer()!=null){
+            Customer customer = newUser.getCustomer();
+            customer.setUser(newUser);
+            customerService.save(customer);
+        }
+        userService.save(newUser);
+        return "redirect:/admin_users";
     }
 
 }

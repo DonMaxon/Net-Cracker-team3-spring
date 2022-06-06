@@ -18,6 +18,7 @@
                 <th scope="col">Location</th>
                 <th scope="col">Email</th>
                 <th scope="col">Phone number</th>
+                <th scope="col">Actions</th>
             </tr>
             </thead>
             <tbody>
@@ -27,6 +28,8 @@
                 <td><a th:utext="${inf.location.name}" th:href="@{/one_location(location=${inf.location.id})}">Location</a></td>
                 <td th:utext="${inf.contactData.email}">Email</td>
                 <td th:utext="${inf.contactData.phoneNumber}">Phone number</td>
+                <td><a class="delete_text" th:href="@{/del_customer(customer=${inf.id})}" style = "color:red">Delete</a>
+                    <a class="update_text" th:href="@{/update_customer(customer=${inf.id})}" style = "color:green">Update</a></td>
             </tr>
             </tbody>
         </table>

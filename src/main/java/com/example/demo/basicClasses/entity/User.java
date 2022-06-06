@@ -1,9 +1,6 @@
 package com.example.demo.basicClasses.entity;
 
-import com.example.demo.basicClasses.services.UserService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -78,7 +75,7 @@ public class User implements UserDetails, CredentialsContainer {
         this.id = id;
     }
 
-    public boolean isAdmin() {
+    public boolean getAdmin() {
         return isAdmin;
     }
 
@@ -87,7 +84,7 @@ public class User implements UserDetails, CredentialsContainer {
     }
 
     public static UserDetails fromUser(User user){
-        return new User(user.getId(), user.isAdmin(), user.getUsername(), user.getPassword());
+        return new User(user.getId(), user.getAdmin(), user.getUsername(), user.getPassword());
     }
 
     @Override
