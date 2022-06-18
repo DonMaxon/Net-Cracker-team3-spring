@@ -1,18 +1,17 @@
 package com.example.demo.basicClasses.services;
 
 import com.example.demo.basicClasses.api.exceptions.NotFoundException;
-import com.example.demo.basicClasses.entity.Attribute;
-import com.example.demo.basicClasses.entity.AttributeValue;
-import com.example.demo.basicClasses.entity.AttributeValueId;
+import com.example.demo.basicClasses.entity.*;
 import com.example.demo.basicClasses.repositories.AttributeRepository;
 import com.example.demo.basicClasses.repositories.AttributeValueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
-public class AttributeValueService {
+public class AttributeValueService{
 
     private final AttributeValueRepository attributeValueRepository;
 
@@ -36,7 +35,4 @@ public class AttributeValueService {
 //        return attributeValueRepository.findById(id).orElseThrow(NotFoundException::new);
 //    }
 
-    public void deleteAll(){
-        attributeValueRepository.deleteAll();
-    }
 }

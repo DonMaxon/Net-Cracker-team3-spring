@@ -8,14 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.AccessDeniedException;
 
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Controller
@@ -194,11 +193,19 @@ public class WebController {
             throw new AccessDeniedException("403 returned");
         }
         Order order = orderService.findById(uuid);
-        List<AttributeValue> values = order.getAttributeValues();
+        HashMap<UUID, Attribute> attrs = new HashMap<>();
+        HashMap<UUID, AttributeValue> vals = new HashMap<>(order.getParams());
+        for (Attribute attribute: order.getSpecification().getAttributes()){
+            if (!vals.containsKey(attribute.getId())){
+                vals.put(attribute.getId(), null);
+            }
+            attrs.put(attribute.getId(), attribute);
+        }
         List<Location> locations = order.getSpecification().getAvailableLocations();
+        model.addAttribute("attributes", attrs);
         model.addAttribute("locations", locations);
         model.addAttribute("orders", order);
-        model.addAttribute("values", values);
+        model.addAttribute("values", vals);
         return "admin_one_order";
     }
 
@@ -402,15 +409,29 @@ public class WebController {
     }
 
     @GetMapping("/new_order")
-    public String newOrder(Model model){
+    public String newOrder(@RequestParam(value = "customer") UUID uuid, Model model){
         if (!checkOnAdmin()){
             throw new AccessDeniedException("403 returned");
         }
         model.addAttribute("order", new Order());
-        model.addAttribute("customers", customerService.getAll());
         model.addAttribute("specs", specificationService.getAll());
-        model.addAttribute("services", serviceService.getAll());
+        Customer customer = customerService.findById(uuid);
+        model.addAttribute("customer", customer);
         return "new_order";
+    }
+
+    @PostMapping("/new_order")
+    public String newOrderPost(@RequestParam(value = "customer") UUID uuid, Model model, @ModelAttribute Order order){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        order.setId(UUID.randomUUID());
+        order.setName("New "+order.getSpecification().getName()+"Order");
+        order.setCustomer(customerService.findById(uuid));
+        order.setAim(Order.OrderAIM.NEW);
+        order.setOrderStatus(Order.OrderStatus.ENTERING);
+        orderService.save(order);
+        return "redirect:/admin_one_order?order="+order.getId().toString();
     }
 
     @GetMapping("new_customer")
@@ -533,6 +554,58 @@ public class WebController {
         }
         userService.save(newUser);
         return "redirect:/admin_users";
+    }
+
+    @GetMapping("/disconnect_service")
+    public String disconnectService(@RequestParam("service") UUID uuid, Model model){
+        Order order = new Order(UUID.randomUUID());
+        order.setAim(Order.OrderAIM.DISCONNECT);
+        order.setOrderStatus(Order.OrderStatus.ENTERING);
+        Service service = serviceService.findById(uuid);
+        order.setService(service);
+        order.setCustomer(service.getCustomer());
+        order.setName("Disconnect"+service.getName());
+        order.setAttributeValues(service.getAttributeValues());
+        order.setSpecification(service.getSpecification());
+        orderService.save(order);
+        return "redirect:/admin_one_order?order="+order.getId().toString();
+    }
+
+    @GetMapping("/modify_service")
+    public String modifyService(@RequestParam("service") UUID uuid, Model model){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        model.addAttribute("service", serviceService.findById(uuid));
+        model.addAttribute("order", new Order());
+        return "modify_service";
+    }
+
+    @PostMapping("/modify_service")
+    public String modifyServicePost(@RequestParam("service") UUID uuid, Model model, @ModelAttribute Order order){
+        if (!checkOnAdmin()){
+            throw new AccessDeniedException("403 returned");
+        }
+        order.setId(UUID.randomUUID());
+        order.setAim(Order.OrderAIM.MODIFY);
+        order.setOrderStatus(Order.OrderStatus.ENTERING);
+        Service service = serviceService.findById(uuid);
+        order.setService(service);
+        order.setCustomer(service.getCustomer());
+        order.setName("Modify"+service.getName());
+        order.setAttributeValues(service.getAttributeValues());
+        order.setSpecification(service.getSpecification());
+        orderService.save(order);
+        return "redirect:/admin_one_order?order="+order.getId().toString();
+    }
+
+    @PostMapping("/new_params")
+    public String newParams(@RequestParam("order") UUID uuid, Model model, @ModelAttribute Map<Object, Object> vals){
+        Order order = orderService.findById(uuid);
+        System.out.println(vals.toString());
+        //order.setParams(vals);
+        orderService.save(order);
+        return "redirect:/admin_one_order?order="+uuid.toString();
     }
 
 }

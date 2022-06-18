@@ -41,19 +41,15 @@
         <h2>New order</h2>
         <p class="lead">Below is an example form built entirely with Bootstrap’s form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p>
     </div>
-    <form method="post" th:object="${order}" th:action="@{/new_order(customer=${customer.id})}">
+    <form method="post" th:object="${order}" th:action="@{/modify_order(service=${service.id})}">
         <div class="row g-5 mx-auto" >
             <div class="col-md-7 col-lg-8 mx-auto">
-                <h4 class="mb-3" style="text-align:center">Enter parameters of new order</h4>
+                <h4 class="mb-3" style="text-align:center">Enter parameters of modifying order</h4>
                 <form class="needs-validation" novalidate>
                     <div class="row g-3">
                         <div class="col-sm-6 w-100">
                             <label  class="form-label">Description</label>
                             <input type="text" class="form-control" id="description" placeholder="" value="" required="required" th:field="*{description}">
-                            <br>
-                            <label  class="form-label">Specification</label>
-                            <select class = "new_info_input" required="required" th:field="*{specification}">
-                                <option  th:each="inf : ${specs}" th:text="${inf.name}" th:value="${inf.id}">Service</option></select>
                             <br>
                             <div class="invalid-feedback">
                                 Valid name is required.

@@ -10,11 +10,12 @@ import java.util.Objects;
 @Embeddable
 public class AttributeValueId implements Serializable {
 
+
     @ManyToOne
-    @JoinColumn(name = "service_id")
+    @JoinColumn(name = "service_id", nullable = true)
     private Service service;
     @ManyToOne
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", nullable = true)
     private Order order;
     @ManyToOne
     @JoinColumn(name = "attribute_id")

@@ -25,8 +25,7 @@ public class OrderService {
 
     public void save(Order order) {
         if (order.getService()==null){
-            orderRepository.save(new OrderServiceAPI().createOrderNew(order.getSpecification(),
-                    order.getCustomer(), new ArrayList<>(order.getParams().values())));
+            orderRepository.save(order);
         }
         orderRepository.save(order);
     }

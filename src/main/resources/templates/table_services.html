@@ -17,6 +17,7 @@
                 <th th:if="${customer?.id}" scope="col">Сustomer</th>
                 <th scope="col">Specification</th>
                 <th scope="col">Description</th>
+                <th th:if="${customers?.id}" scope="col">Actions</th>
             </tr>
             </thead>
             <tbody>
@@ -26,6 +27,8 @@
                 <td th:if="${customer?.id}"><a th:utext="${inf.customer.firstName}+' '+${inf.customer.lastName}" th:href="@{/admin_one_customer(customer=${inf.customer.id})}">Сustomer</a></td>
                 <td><a th:utext="${inf.specification.name} " th:href="@{/admin_one_spec(spec=${inf.specification.id})}">Specification</a></td>
                 <td th:utext="${inf.description}">Description</td>
+                <td th:if="${customers?.id}"><a class="delete_text" th:href="@{/disconnect_service(service=${inf.id})}" style = "color:red">Disconnect</a>
+                    <a class="update_text" th:href="@{/modify_service(service=${inf.id})}" style = "color:green">Modify</a></td>
             </tr>
             </tbody>
         </table>

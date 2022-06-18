@@ -208,6 +208,10 @@ public class Order implements OrderService, ObjectWithId {
 
     }
 
+    public void setOrderStatus(OrderStatus status){
+        this.status = status;
+    }
+
     private void setStatus(OrderStatus status) {
         if (status == OrderStatus.COMPLETED&&aim==OrderAIM.NEW){
             service.setStatus(Service.ServiceStatus.ACTIVE);
@@ -319,6 +323,13 @@ public class Order implements OrderService, ObjectWithId {
     @JsonView(OrderAndServiceViews.WithCustomerID.class)
     public void setCustomerID(UUID specID){
         customer=new Customer(specID);
+    }
+
+    public boolean isEntering (){
+        if (status==OrderStatus.ENTERING){
+            return true;
+        }
+        return false;
     }
 
 }
