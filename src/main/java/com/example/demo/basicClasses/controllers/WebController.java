@@ -1,5 +1,7 @@
 package com.example.demo.basicClasses.controllers;
 
+import com.example.demo.basicClasses.controllers.dto.FieldDTO;
+import com.example.demo.basicClasses.controllers.dto.FormDTO;
 import com.example.demo.basicClasses.entity.*;
 import com.example.demo.basicClasses.entity.exceptions.OrderException;
 import com.example.demo.basicClasses.services.*;
@@ -12,10 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.AccessDeniedException;
 
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Controller
 public class WebController {
@@ -193,19 +192,25 @@ public class WebController {
             throw new AccessDeniedException("403 returned");
         }
         Order order = orderService.findById(uuid);
-        HashMap<UUID, Attribute> attrs = new HashMap<>();
-        HashMap<UUID, AttributeValue> vals = new HashMap<>(order.getParams());
+        List<FieldDTO> fields = new ArrayList<>();
         for (Attribute attribute: order.getSpecification().getAttributes()){
-            if (!vals.containsKey(attribute.getId())){
-                vals.put(attribute.getId(), null);
+            FieldDTO fieldDTO = new FieldDTO();
+            fieldDTO.setId(attribute.getId().toString());
+            fieldDTO.setRequired(attribute.getMandatority());
+            fieldDTO.setName(attribute.getName());
+            if(order.getParams().containsKey(attribute.getId())){
+                fieldDTO.setValue(order.getParams().get(attribute.getId()).getValue());
             }
-            attrs.put(attribute.getId(), attribute);
+            fields.add(fieldDTO);
         }
+        FormDTO form = new FormDTO();
+        System.out.println("form = " + form);
+        form.setFields(fields);
         List<Location> locations = order.getSpecification().getAvailableLocations();
-        model.addAttribute("attributes", attrs);
         model.addAttribute("locations", locations);
         model.addAttribute("orders", order);
-        model.addAttribute("values", vals);
+        model.addAttribute("fields", fields);
+        model.addAttribute("form", form);
         return "admin_one_order";
     }
 
@@ -380,8 +385,8 @@ public class WebController {
         }
         Order order = orderService.findById(uuid);
         order.addValue(attributeValue);
-        attributeValue.setAttributeValueId(new AttributeValueId(order.getService(), order,
-                attributeService.findById(attributeValue.getAttributeId())));
+        //attributeValue.setAttributeValueId(new AttributeValueId(order.getService(), order,
+        //        attributeService.findById(attributeValue.getAttributeId())));
         attributeValueService.save(attributeValue);
         orderService.save(order);
         return "redirect:/admin_one_order?order="+uuid.toString();
@@ -600,10 +605,19 @@ public class WebController {
     }
 
     @PostMapping("/new_params")
-    public String newParams(@RequestParam("order") UUID uuid, Model model, @ModelAttribute Map<Object, Object> vals){
+    public String newParams(@RequestParam("order") UUID uuid, Model model, @ModelAttribute FormDTO form){
         Order order = orderService.findById(uuid);
-        System.out.println(vals.toString());
-        //order.setParams(vals);
+
+        for(FieldDTO field : form.getFields()){
+            Attribute attribute = attributeService.findById(UUID.fromString(field.getId()));
+            AttributeValue value = order.getParams().containsKey(attribute.getId()) ?
+                    order.getParams().get(attribute.getId()) :
+                    new AttributeValue(UUID.randomUUID());
+            value.setOrder(order);
+            value.setAttribute(attribute);
+            value.setValue(field.getValue());
+            attributeValueService.save(value);
+        }
         orderService.save(order);
         return "redirect:/admin_one_order?order="+uuid.toString();
     }

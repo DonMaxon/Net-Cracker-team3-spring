@@ -46,7 +46,7 @@ public class ServiceDeserializer extends StdDeserializer<Service> {
         values = js.equals("") ? new ArrayList<>(): Arrays.asList(mapper.readValue(js, AttributeValue[].class));
         Service res = new Service(uuid, name, description, status, specification, customer);
         for (int i =0; i < values.size(); ++i){
-            values.get(i).getAttributeValueId().setService(res);
+            values.get(i).setService(res);
         }
         res.setAttributeValues(values);
         return res;

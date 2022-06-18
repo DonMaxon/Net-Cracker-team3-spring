@@ -53,6 +53,9 @@ public class Order implements OrderService, ObjectWithId {
     @Column(name = "aim")
     private OrderAIM aim;
 
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "order")
+    private List<AttributeValue> values;
+
     @JsonDeserialize(keyUsing = Attribute.AttributeDeserializer.class)
     @Transient
     @JsonIgnore
@@ -110,10 +113,12 @@ public class Order implements OrderService, ObjectWithId {
 
     @JsonIgnore
     public Map<UUID, AttributeValue> getParams() {
-        if (status==OrderStatus.ENTERING) {
-            return params;
+        Map<UUID, AttributeValue> params = new HashMap<>();
+        for(AttributeValue value : values){
+            params.put(value.getAttributeId(), value);
         }
-        return new HashMap<>(params);
+        this.params = params;
+        return params;
     }
 
     public void setParams(Map<UUID, AttributeValue> params) {
@@ -182,10 +187,7 @@ public class Order implements OrderService, ObjectWithId {
     }
     @JsonSetter
     public void setAttributeValues(List<AttributeValue> values){
-        params = new HashMap<>();
-        for (int i =0; i < values.size(); ++i){
-            params.put(values.get(i).getAttributeId(), values.get(i));
-        }
+        this.values = values;
     }
 
     public void startOrder(){
@@ -246,20 +248,12 @@ public class Order implements OrderService, ObjectWithId {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Order order = (Order) o;
-        return Objects.equals(id, order.id) &&
-                Objects.equals(name, order.name) &&
-                Objects.equals(description, order.description) &&
-                Objects.equals(service, order.service) &&
-                Objects.equals(specification, order.specification) &&
-                Objects.equals(customer.getId(), order.customer.getId()) &&
-                status == order.status &&
-                aim == order.aim&&
-                Objects.equals(params, order.params);
+        return Objects.equals(id, order.id) && Objects.equals(name, order.name) && Objects.equals(description, order.description) && Objects.equals(service, order.service) && Objects.equals(specification, order.specification) && Objects.equals(customer, order.customer) && status == order.status && aim == order.aim && Objects.equals(values, order.values);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, service, specification, customer, status, aim, params);
+        return Objects.hash(id, name, description, service, specification, customer, status, aim, values);
     }
 
     @Override
@@ -270,10 +264,10 @@ public class Order implements OrderService, ObjectWithId {
                 ", description='" + description + '\'' +
                 ", service=" + service +
                 ", specification=" + specification +
-                ", customer=" + customer.getId().toString() +
+                ", customer=" + customer +
                 ", status=" + status +
                 ", aim=" + aim +
-                ", params=" + params +
+                ", values=" + values +
                 '}';
     }
 
@@ -288,7 +282,7 @@ public class Order implements OrderService, ObjectWithId {
     }
 
     public void addValue(AttributeValue attributeValue){
-        params.put(attributeValue.getAttributeId(), attributeValue);
+        values.add(attributeValue);
     }
 
     @JsonGetter

@@ -44,8 +44,11 @@ public class AttributeValueDeserializer extends StdDeserializer<AttributeValue> 
         }
         String val = jn.get("value").asText();
 
-        AttributeValueId attributeValueId = new AttributeValueId(new Service(serviceid),
-                new Order(orderid), new Attribute(attrid));
-        return new AttributeValue(attributeValueId, val);
+
+        AttributeValue attributeValue = new AttributeValue();
+        attributeValue.setOrder( new Order(orderid));
+        attributeValue.setService( new Service(serviceid));
+        attributeValue.setAttribute(new Attribute(attrid));
+        return attributeValue;
     }
 }

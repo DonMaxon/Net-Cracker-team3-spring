@@ -24,8 +24,19 @@ import java.util.UUID;
 @JsonDeserialize(using = AttributeValueDeserializer.class)
 public class AttributeValue {
 
-    @EmbeddedId
-    private AttributeValueId attributeValueId;
+    @Id
+    @Column(name = "id")
+    private UUID id;
+
+    @ManyToOne
+    @JoinColumn(name = "service_id", nullable = true)
+    private Service service;
+    @ManyToOne
+    @JoinColumn(name = "order_id", nullable = true)
+    private Order order;
+    @ManyToOne
+    @JoinColumn(name = "attribute_id")
+    private Attribute attribute;
 
     @JsonIgnore
     private LocalDate date;
@@ -38,72 +49,69 @@ public class AttributeValue {
 
     }
 
-    public AttributeValue(AttributeValueId attributeValueId) {
-        this.attributeValueId = attributeValueId;
+    public AttributeValue(UUID id) {
+        this.id = id;
     }
 
-    public AttributeValue(AttributeValueId attributeValueId, String string) {
-        this.attributeValueId = attributeValueId;
-        this.string = string;
+    public Service getService() {
+        return service;
     }
 
-    @JsonIgnore
-    public AttributeValueId getAttributeValueId() {
-        return attributeValueId;
+    public void setService(Service service) {
+        this.service = service;
     }
 
-    @JsonIgnore
-    public void setAttributeValueId(AttributeValueId attributeValueId) {
-        this.attributeValueId = attributeValueId;
+    public Order getOrder() {
+        return order;
     }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+
+    public Attribute getAttribute() {
+        return attribute;
+    }
+
+    public void setAttribute(Attribute attribute) {
+        this.attribute = attribute;
+    }
+
 
     @JsonGetter
     @JsonView(OrderAndServiceViews.WithoutCustomerID.class)
     public UUID getAttributeId() {
-        return attributeValueId.getAttribute().getId();
+        return attribute.getId();
     }
 
-    @JsonSetter
-    public void setAttributeId(UUID attributeId) {
-        this.attributeValueId = attributeValueId;
-    }
+
 
     @JsonGetter
     @JsonView(AttributeValue.ValueViews.ValueWithOrderService.class)
     public UUID getServiceId(){
-        if (attributeValueId.getService()!=null) {
-            return attributeValueId.getService().getId();
+        if (service!=null) {
+            return service.getId();
         }
         return null;
     }
 
     @JsonSetter
     public void setServiceId(UUID id){
-        if (attributeValueId.getService()!=null) {
-            attributeValueId.getService().setId(id);
-        }
-        else {
-            attributeValueId.setService(new Service(id));
-        }
+        setService(new Service(id));
     }
 
     @JsonGetter
     @JsonView(AttributeValue.ValueViews.ValueWithOrderService.class)
     public UUID getOrderId(){
-        if (attributeValueId.getOrder()!=null) {
-            return attributeValueId.getOrder().getId();
+        if (getOrder()!=null) {
+            return getOrder().getId();
         }
         return null;
     }
 
     @JsonSetter
     public void setOrderId(UUID id){
-        if (attributeValueId.getOrder()!=null) {
-            attributeValueId.getService().setId(id);
-        }
-        else {
-            attributeValueId.setOrder(new Order(id));
-        }
+        setOrder(new Order(id));
     }
 
     @Override
@@ -136,11 +144,11 @@ public class AttributeValue {
 
     @JsonSetter
     public void setValue(String str){
-        if (attributeValueId.getAttribute().getType()==null){
+        if (getAttribute().getType()==null){
             this.string =str;
             return;
         }
-        switch (attributeValueId.getAttribute().getType()){
+        switch (getAttribute().getType()){
             case DATE:
                 date = LocalDate.parse(str);
                 return;
@@ -150,6 +158,14 @@ public class AttributeValue {
 
         }
         this.string =str;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 
 

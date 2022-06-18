@@ -52,7 +52,7 @@ public class OrderDeserializer extends StdDeserializer<Order> {
         Service service = new Service(UUID.fromString(jn.get("serviceID").asText()));
         Order res = new Order(uuid, name, description, service, specification, customer,  status, aim);
         for (int i =0; i < values.size(); ++i){
-            values.get(i).getAttributeValueId().setOrder(res);
+            values.get(i).setOrder(res);
         }
         res.setAttributeValues(values);
         return res;
