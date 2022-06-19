@@ -28,7 +28,7 @@
                 <td th:utext="${field.name}">Attribute</td>
                 <td>
                     <input th:field="*{fields[__${fieldStat.index}__].id}" style="display: none">
-                    <input type="text" class="form-control"  th:attr="name = ${field.id}, required=${field.isRequired? 'required' : null}"  th:field="*{fields[__${fieldStat.index}__].value}">
+                    <input type="text" class="form-control"  th:attr="required=${field.isRequired? 'required' : null}, type=${field.type}"  th:field="*{fields[__${fieldStat.index}__].value}">
                 </td>
             </tr>
             </tbody>

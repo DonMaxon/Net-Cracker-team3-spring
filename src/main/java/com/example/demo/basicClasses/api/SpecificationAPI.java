@@ -1,7 +1,6 @@
 package com.example.demo.basicClasses.api;
 
 
-import com.example.demo.basicClasses.Repo;
 import com.example.demo.basicClasses.api.exceptions.CreatingException;
 import com.example.demo.basicClasses.entity.AvailableSpecializationsInLocation;
 import com.example.demo.basicClasses.entity.Location;
@@ -15,7 +14,7 @@ import java.util.UUID;
 @Service
 public class SpecificationAPI {
 
-    private static SpecificationAPI instance;
+
 
     public Specification createSpecification(String name){
         return new Specification(UUID.randomUUID(), name);
@@ -34,12 +33,12 @@ public class SpecificationAPI {
     }
 
     private boolean isUniqueName(String name){
-        Repo repo = Repo.getInstance();
+        /*Repo repo = Repo.getInstance();
         for (int i =0; i < repo.getSpecs().size();++i){
             if (name.equals(repo.getSpecs().get(i).getName())){
                 return false;
             }
-        }
+        }*///TODO FIX THAT!
         return true;
     }
 }

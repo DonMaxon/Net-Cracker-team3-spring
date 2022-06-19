@@ -1,5 +1,6 @@
 package com.example.demo.basicClasses.controllers;
 
+import com.example.demo.basicClasses.api.OrderServiceAPI;
 import com.example.demo.basicClasses.controllers.dto.FieldDTO;
 import com.example.demo.basicClasses.controllers.dto.FormDTO;
 import com.example.demo.basicClasses.entity.*;
@@ -37,6 +38,8 @@ public class WebController {
     AttributeValueService attributeValueService;
     @Autowired
     ContactDataService contactDataService;
+    @Autowired
+    OrderServiceAPI orderServiceAPI;
 
     private boolean checkOnAdmin(){
         User user = (User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -180,9 +183,31 @@ public class WebController {
         Service service = serviceService.findById(uuid);
         List<AttributeValue> values = service.getAttributeValues();
         List<Location> locations = service.getSpecification().getAvailableLocations();
+        List<FieldDTO> fields = new ArrayList<>();
+        for (Attribute attribute: service.getSpecification().getAttributes()){
+            FieldDTO fieldDTO = new FieldDTO();
+            fieldDTO.setId(attribute.getId().toString());
+            fieldDTO.setRequired(attribute.getMandatority());
+            fieldDTO.setName(attribute.getName());
+            switch (attribute.getType()){
+                case DATE: fieldDTO.setType("date"); break;
+                case NUMBER:  fieldDTO.setType("number"); break;
+                case STRING:
+                default:    fieldDTO.setType("text");
+            }
+            if(service.getParams().containsKey(attribute.getId())){
+                fieldDTO.setValue(service.getParams().get(attribute.getId()).getValue());
+            }
+            fields.add(fieldDTO);
+        }
+        FormDTO form = new FormDTO();
+        form.setFields(fields);
+        System.out.println("OUT form = " + form);
         model.addAttribute("locations", locations);
         model.addAttribute("services", service);
         model.addAttribute("values", values);
+        model.addAttribute("orders", service.getOrders());
+        model.addAttribute("form", form);
         return "admin_one_service";
     }
 
@@ -198,14 +223,20 @@ public class WebController {
             fieldDTO.setId(attribute.getId().toString());
             fieldDTO.setRequired(attribute.getMandatority());
             fieldDTO.setName(attribute.getName());
+            switch (attribute.getType()){
+                case DATE: fieldDTO.setType("date"); break;
+                case NUMBER:  fieldDTO.setType("number"); break;
+                case STRING:
+                default:    fieldDTO.setType("text");
+            }
             if(order.getParams().containsKey(attribute.getId())){
                 fieldDTO.setValue(order.getParams().get(attribute.getId()).getValue());
             }
             fields.add(fieldDTO);
         }
         FormDTO form = new FormDTO();
-        System.out.println("form = " + form);
         form.setFields(fields);
+        System.out.println("OUT form = " + form);
         List<Location> locations = order.getSpecification().getAvailableLocations();
         model.addAttribute("locations", locations);
         model.addAttribute("orders", order);
@@ -367,45 +398,19 @@ public class WebController {
         return "redirect:/admin_one_spec?spec="+spec_uuid.toString();
     }
 
-    @GetMapping("/new_value")
-    public String newValue(@RequestParam(value = "order") UUID uuid, Model model){
-        if (!checkOnAdmin()){
-            throw new AccessDeniedException("403 returned");
-        }
-        model.addAttribute("order", orderService.findById(uuid));
-        model.addAttribute("value", new AttributeValue());
-        model.addAttribute("attributes", orderService.findById(uuid).getSpecification().getAttributes());
-        return "new_value";
-    }
-
-    @PostMapping("/new_value")
-    public String newValuePost(@RequestParam(value = "order") UUID uuid, Model model, @ModelAttribute AttributeValue attributeValue){
-        if (!checkOnAdmin()){
-            throw new AccessDeniedException("403 returned");
-        }
-        Order order = orderService.findById(uuid);
-        order.addValue(attributeValue);
-        //attributeValue.setAttributeValueId(new AttributeValueId(order.getService(), order,
-        //        attributeService.findById(attributeValue.getAttributeId())));
-        attributeValueService.save(attributeValue);
-        orderService.save(order);
-        return "redirect:/admin_one_order?order="+uuid.toString();
-    }
-
     @GetMapping("/change_status")
     public String newValuePost(@RequestParam(value = "order") UUID uuid, Model model){
         if (!checkOnAdmin()){
             throw new AccessDeniedException("403 returned");
         }
         Order order = orderService.findById(uuid);
+
         try {
             if (order.getStatus() == Order.OrderStatus.ENTERING) {
-                order.startOrder();
+                orderServiceAPI.startOrder(order);
             } else {
-                order.completeOrder();
+                orderServiceAPI.completeOrder(order);
             }
-            orderService.save(order);
-            serviceService.save(order.getService());
         }
         catch (OrderException e){
 
@@ -426,15 +431,13 @@ public class WebController {
     }
 
     @PostMapping("/new_order")
-    public String newOrderPost(@RequestParam(value = "customer") UUID uuid, Model model, @ModelAttribute Order order){
+    public String newOrderPost(@RequestParam(value = "customer") UUID uuid, Model model, @ModelAttribute Order orderForm){
         if (!checkOnAdmin()){
             throw new AccessDeniedException("403 returned");
         }
-        order.setId(UUID.randomUUID());
-        order.setName("New "+order.getSpecification().getName()+"Order");
-        order.setCustomer(customerService.findById(uuid));
-        order.setAim(Order.OrderAIM.NEW);
-        order.setOrderStatus(Order.OrderStatus.ENTERING);
+        System.out.println(orderForm);
+        Order order = orderServiceAPI.createOrderNew(orderForm.getSpecification(), orderForm.getCustomer(), new ArrayList<>());
+        order.setDescription(orderForm.getDescription());
         orderService.save(order);
         return "redirect:/admin_one_order?order="+order.getId().toString();
     }
@@ -563,16 +566,8 @@ public class WebController {
 
     @GetMapping("/disconnect_service")
     public String disconnectService(@RequestParam("service") UUID uuid, Model model){
-        Order order = new Order(UUID.randomUUID());
-        order.setAim(Order.OrderAIM.DISCONNECT);
-        order.setOrderStatus(Order.OrderStatus.ENTERING);
         Service service = serviceService.findById(uuid);
-        order.setService(service);
-        order.setCustomer(service.getCustomer());
-        order.setName("Disconnect"+service.getName());
-        order.setAttributeValues(service.getAttributeValues());
-        order.setSpecification(service.getSpecification());
-        orderService.save(order);
+        Order order = orderServiceAPI.createOrderDisconnect(service);
         return "redirect:/admin_one_order?order="+order.getId().toString();
     }
 
@@ -587,19 +582,13 @@ public class WebController {
     }
 
     @PostMapping("/modify_service")
-    public String modifyServicePost(@RequestParam("service") UUID uuid, Model model, @ModelAttribute Order order){
+    public String modifyServicePost(@RequestParam("service") UUID uuid, Model model, @ModelAttribute Order orderForm){
         if (!checkOnAdmin()){
             throw new AccessDeniedException("403 returned");
         }
-        order.setId(UUID.randomUUID());
-        order.setAim(Order.OrderAIM.MODIFY);
-        order.setOrderStatus(Order.OrderStatus.ENTERING);
         Service service = serviceService.findById(uuid);
-        order.setService(service);
-        order.setCustomer(service.getCustomer());
-        order.setName("Modify"+service.getName());
-        order.setAttributeValues(service.getAttributeValues());
-        order.setSpecification(service.getSpecification());
+        Order order = orderServiceAPI.createOrderModify(service);
+        order.setDescription(orderForm.getDescription());
         orderService.save(order);
         return "redirect:/admin_one_order?order="+order.getId().toString();
     }
@@ -607,7 +596,9 @@ public class WebController {
     @PostMapping("/new_params")
     public String newParams(@RequestParam("order") UUID uuid, Model model, @ModelAttribute FormDTO form){
         Order order = orderService.findById(uuid);
-
+        if(order.getStatus() != Order.OrderStatus.ENTERING)
+            throw new RuntimeException("You do not able to change parameters");
+        System.out.println("form = " + form);
         for(FieldDTO field : form.getFields()){
             Attribute attribute = attributeService.findById(UUID.fromString(field.getId()));
             AttributeValue value = order.getParams().containsKey(attribute.getId()) ?

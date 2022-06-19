@@ -1,19 +1,10 @@
 package com.example.demo.basicClasses.entity;
 
 
-import com.example.demo.basicClasses.Repo;
-import com.example.demo.basicClasses.deserializers.CustomerDeserializer;
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
-import org.springframework.stereotype.Component;
 
 
 import javax.persistence.*;
-import java.io.IOException;
 import java.util.*;
 
 @JsonPropertyOrder({"id","firstName","lastName","contactData", "services", "orders", "locationId"})

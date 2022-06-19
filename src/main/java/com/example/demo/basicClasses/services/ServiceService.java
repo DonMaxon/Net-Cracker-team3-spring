@@ -20,8 +20,8 @@ public class ServiceService {
         this.serviceRepository = serviceRepository;
     }
 
-    public void save(Service service) {
-        serviceRepository.save(service);
+    public Service save(Service service) {
+        return serviceRepository.save(service);
     }
 
     public void delete(UUID id){

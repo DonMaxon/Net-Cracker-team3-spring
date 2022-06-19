@@ -132,22 +132,17 @@ public class AttributeValue {
     @JsonGetter
     @Column(name = "value")
     public String getValue(){
-        if (date!=null){
-            return date.toString();
+        switch (getAttribute().getType()){
+            case DATE: return date.toString();
+            case NUMBER: return integer.toString();
+            case STRING:
+            default: return string;
         }
-        if (integer!=null){
-            return integer.toString();
-        }
-        return string;
     }
 
 
     @JsonSetter
     public void setValue(String str){
-        if (getAttribute().getType()==null){
-            this.string =str;
-            return;
-        }
         switch (getAttribute().getType()){
             case DATE:
                 date = LocalDate.parse(str);
@@ -155,9 +150,9 @@ public class AttributeValue {
             case NUMBER:
                 integer = Integer.parseInt(str);
                 return;
-
+            case STRING:
+            default: string =str;
         }
-        this.string =str;
     }
 
     public UUID getId() {

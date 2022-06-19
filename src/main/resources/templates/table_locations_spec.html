@@ -9,7 +9,7 @@
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
     <h2>Locations</h2>
     <h3><a th:text="${parent?.name}">Locations</a></h3>
-    <a th:href="@{/new_location(creator=${parent?.id})}">Create</a>
+    <a class="btn btn-success" th:href="@{/new_location(creator=${parent?.id})}">Create</a>
     <div class="table-responsive"  th:fragment="table_locations_spec">
         <table class="table table-striped table-sm">
             <thead>
@@ -23,7 +23,7 @@
             <tr th:each="inf: ${locations}">
                 <td><a th:utext="${inf.name}"  th:href="@{/one_location(location=${inf.id})}">Name</a></td>
                 <td th:utext="${inf.type}">Status</td>
-                <td><a class="delete_text" th:href="@{/del_location_from_spec(spec=${specifications.id}, location=${inf.id})}" style = "color:red">Delete</a>
+                <td><a class="btn btn-danger" th:href="@{/del_location_from_spec(spec=${specifications.id}, location=${inf.id})}">Delete</a>
             </tr>
             </tbody>
         </table>

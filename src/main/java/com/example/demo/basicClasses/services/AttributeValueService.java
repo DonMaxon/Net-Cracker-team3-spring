@@ -2,12 +2,10 @@ package com.example.demo.basicClasses.services;
 
 import com.example.demo.basicClasses.api.exceptions.NotFoundException;
 import com.example.demo.basicClasses.entity.*;
-import com.example.demo.basicClasses.repositories.AttributeRepository;
 import com.example.demo.basicClasses.repositories.AttributeValueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -20,8 +18,8 @@ public class AttributeValueService{
         this.attributeValueRepository = attributeValueRepository;
     }
 
-    public void save(AttributeValue attributeValue) {
-        attributeValueRepository.save(attributeValue);
+    public AttributeValue save(AttributeValue attributeValue) {
+        return attributeValueRepository.save(attributeValue);
     }
 
     public void delete(UUID id){

@@ -23,15 +23,15 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="info: ${orders}">
-                <td><a th:utext="${info.name}" th:href="@{/admin_one_order(order=${info.id})}">Name</a></td>
-                <td th:utext="${info.aim}">Aim</td>
-                <td th:utext="${info.status}">Status</td>
-                <td th:if="${customer?.id}"><a  th:utext="${info.customer.firstName}+' '+${info.customer.lastName}" th:href="@{/admin_one_customer(customer=${info.customer.id})}">Customer</a></td>
-                <td><a th:utext="${info.service?.name} " th:href="@{/admin_one_service(service=${info.service?.id})}">Service</a></td>
-                <td><a th:utext="${info.specification.name} " th:href="@{/admin_one_spec(spec=${info.specification.id})}"> Specification </a></td>
-                <td th:utext="${info.description}">Description</td>
-                <td><a method="post" th:href="@{/change_status(order=${info.id})}"> Change status </a></td>
+            <tr th:each="order: ${orders}">
+                <td><a th:utext="${order.name}" th:href="@{/admin_one_order(order=${order.id})}">Name</a></td>
+                <td th:utext="${order.aim}">Aim</td>
+                <td th:utext="${order.status}">Status</td>
+                <td th:if="${customer?.id}"><a  th:utext="${order.customer.firstName}+' '+${order.customer.lastName}" th:href="@{/admin_one_customer(customer=${order.customer.id})}">Customer</a></td>
+                <td><a th:utext="${order.service?.name} " th:href="@{/admin_one_service(service=${order.service?.id})}">Service</a></td>
+                <td><a th:utext="${order.specification.name} " th:href="@{/admin_one_spec(spec=${order.specification.id})}"> Specification </a></td>
+                <td th:utext="${order.description}">Description</td>
+                <td><a class="btn btn-primary" method="post" th:href="@{/change_status(order=${order.id})}"> Change status </a></td>
             </tr>
             </tbody>
         </table>

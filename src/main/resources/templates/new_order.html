@@ -37,9 +37,7 @@
 <div class="container">
 
     <div class="py-5 text-center">
-        <img class="d-block mx-auto mb-4" src="../assets/brand/bootstrap-logo.svg" alt="" width="72" height="57">
         <h2>New order</h2>
-        <p class="lead">Below is an example form built entirely with Bootstrap’s form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p>
     </div>
     <form method="post" th:object="${order}" th:action="@{/new_order(customer=${customer.id})}">
         <div class="row g-5 mx-auto" >
@@ -49,10 +47,10 @@
                     <div class="row g-3">
                         <div class="col-sm-6 w-100">
                             <label  class="form-label">Description</label>
-                            <input type="text" class="form-control" id="description" placeholder="" value="" required="required" th:field="*{description}">
+                            <input type="text" class="form-control" id="description" placeholder="" value="" th:field="*{description}">
                             <br>
                             <label  class="form-label">Specification</label>
-                            <select class = "new_info_input" required="required" th:field="*{specification}">
+                            <select class = "new_info_input form-select" required="required" th:field="*{specification}">
                                 <option  th:each="inf : ${specs}" th:text="${inf.name}" th:value="${inf.id}">Service</option></select>
                             <br>
                             <div class="invalid-feedback">

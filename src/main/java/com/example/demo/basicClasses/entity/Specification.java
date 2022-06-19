@@ -1,6 +1,5 @@
 package com.example.demo.basicClasses.entity;
 
-import com.example.demo.basicClasses.Repo;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -123,13 +122,13 @@ public class Specification implements ObjectWithId {
         return attributeIds;
     }
     public static Attribute findAttributeById(UUID id){
-        for (int i = 0; i < Repo.getInstance().getSpecs().size(); ++i){
+        /*for (int i = 0; i < Repo.getInstance().getSpecs().size(); ++i){
             for (int j = 0; j < Repo.getInstance().getSpecs().get(i).getAttributes().size(); ++j){
                 if (id.equals(Repo.getInstance().getSpecs().get(i).getAttributes().get(j).getId())){
                     return Repo.getInstance().getSpecs().get(i).getAttributes().get(j);
                 }
             }
-        }
+        }*/
         return null;
     }
 

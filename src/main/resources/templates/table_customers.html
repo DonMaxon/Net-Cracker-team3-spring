@@ -8,7 +8,7 @@
 <body>
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" th:fragment="table_customers">
     <h2>Customers</h2>
-    <a th:href="@{/new_customer}">Create</a>
+    <a class="btn btn-success" th:href="@{/new_customer}">Create</a>
     <div class="table-responsive" th:fragment="table_customer_one">
         <table class="table table-striped table-sm">
             <thead>
@@ -28,8 +28,8 @@
                 <td><a th:utext="${inf.location.name}" th:href="@{/one_location(location=${inf.location.id})}">Location</a></td>
                 <td th:utext="${inf.contactData.email}">Email</td>
                 <td th:utext="${inf.contactData.phoneNumber}">Phone number</td>
-                <td><a class="delete_text" th:href="@{/del_customer(customer=${inf.id})}" style = "color:red">Delete</a>
-                    <a class="update_text" th:href="@{/update_customer(customer=${inf.id})}" style = "color:green">Update</a></td>
+                <td><a class="btn btn-danger" th:href="@{/del_customer(customer=${inf.id})}">Delete</a>
+                    <a class="btn btn-primary" th:href="@{/update_customer(customer=${inf.id})}">Update</a></td>
             </tr>
             </tbody>
         </table>

@@ -1,8 +1,6 @@
 package com.example.demo.basicClasses.entity;
 
 
-import com.example.demo.basicClasses.Repo;
-
 import com.example.demo.basicClasses.deserializers.LocationDeserializer;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -290,13 +288,13 @@ public class Location implements ObjectWithId {
         ArrayList<Location> children = new ArrayList<Location>(0);
         StringBuilder resBuilder = new StringBuilder();
         resBuilder.append('[');
-        Repo repo = Repo.getInstance();
+        /*Repo repo = Repo.getInstance();
         for (int i = 0; i<repo.getLocations().size(); ++i){
             if (repo.getLocations().get(i).parent!=null &&
                     repo.getLocations().get(i).parent.equals(this)){
                 children.add(repo.getLocations().get(i));
             }
-        }
+        }*/ //TODO FIX THAT!!
         for (int i = 0; i < children.size(); ++i){
             resBuilder.append(children.get(i).simpleSerializeWithoutID());
             resBuilder.append(children.get(i).writeToStr());

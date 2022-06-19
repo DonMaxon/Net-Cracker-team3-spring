@@ -11,7 +11,6 @@
 
     <h2>Section title</h2>
     <div class="table-responsive" th:fragment="table_values">
-        <a th:href="@{/new_value(order=${orders.id})}">Create</a>
         <table class="table table-striped table-sm">
             <thead>
             <tr>
@@ -20,9 +19,10 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="inf: ${values}">
-                <td th:utext="${inf.attributeValueId.attribute}">Attribute</td>
-                <td th:utext="${inf.name}">Value</td>
+            <!--/*@thymesVar id="form" type="com.example.demo.basicClasses.controllers.dto.FormDTO"*/-->
+            <tr th:each="field: ${form.fields}">
+                <td th:utext="${field.name}">Attribute</td>
+                <td th:utext="${field.value}">Value</td>
             </tr>
             </tbody>
         </table>

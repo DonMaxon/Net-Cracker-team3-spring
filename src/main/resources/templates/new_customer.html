@@ -37,9 +37,7 @@
 <div class="container">
 
     <div class="py-5 text-center">
-        <img class="d-block mx-auto mb-4" src="../assets/brand/bootstrap-logo.svg" alt="" width="72" height="57">
         <h2>New customer</h2>
-        <p class="lead">Below is an example form built entirely with Bootstrap’s form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p>
     </div>
     <form method="post" th:object="${customer}" th:action="@{/new_customer}">
         <div class="row g-5 mx-auto" >
@@ -58,14 +56,11 @@
                             <input type="text" class="form-control" id="email" placeholder="" value="" required="required" th:field="*{contactData.email}">
                             <label for="firstName" class="form-label">Phone number</label>
                             <input type="text" class="form-control" id="phoneNumber" placeholder="" value="" required="required" th:field="*{contactData.phoneNumber}">
-                            <br>
                             <label for="firstName" class="form-label">Location</label>
-                            <select class = "new_info_input" required="required" th:field="*{location}">
+                            <select class = "form-select" required="required" th:field="*{location}">
                                 <option  th:each="inf : ${locations}" th:text="${inf.name}" th:value="${inf.id}">Locations</option></select>
-                            <br>
-                            <br>
                             <label for="firstName" class="form-label">User</label>
-                            <select class = "new_info_input" required="required" th:field="*{user}">
+                            <select class = "form-select" required="required" th:field="*{user}">
                                 <option  th:each="inf : ${users}" th:text="${inf.login}" th:value="${inf.id}">Users</option>
                                 <option  th:text="Nobody" th:value="${null}">Nobody</option></select>
                             <br>

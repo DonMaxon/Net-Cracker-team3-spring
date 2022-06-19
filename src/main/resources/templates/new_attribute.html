@@ -37,9 +37,7 @@
 <div class="container">
 
     <div class="py-5 text-center">
-        <img class="d-block mx-auto mb-4" src="../assets/brand/bootstrap-logo.svg" alt="" width="72" height="57">
         <h2>Checkout form</h2>
-        <p class="lead">Below is an example form built entirely with Bootstrap’s form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p>
     </div>
     <form method="post" th:object="${attribute}" th:action="@{/new_attribute(spec=${spec.id})}">
         <div class="row g-5 mx-auto" >
@@ -51,12 +49,12 @@
                             <label for="firstName" class="form-label">Name</label>
                             <input type="text" class="form-control" id="firstName" placeholder="" value="" required="required" th:field="*{name}">
                             <label for="firstName" class="form-label">Is mandatory</label>
-                            <select class="form-control" th:field="*{mandatority}">
+                            <select class="form-select" th:field="*{mandatority}">
                                 <option th:value="1" >true</option>
                                 <option th:value="0" >false</option>
                             </select>
                             <label for="firstName" class="form-label">Type</label>
-                            <select  class="form-control" th:field="*{type}">
+                            <select  class="form-select" th:field="*{type}">
                                 <option  th:each="t : ${T(com.example.demo.basicClasses.entity.Attribute.AttributeTypes).values()}" th:text="${t}" th:value="${t}">Type</option></select>
                             <div class="invalid-feedback">
                                 Valid name is required.

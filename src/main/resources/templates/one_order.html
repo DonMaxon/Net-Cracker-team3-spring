@@ -24,8 +24,8 @@
             </div>
         </div>
         <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-            <div th:if="${orders.isEntering()}"> <div th:replace = "table_editable_values :: table_editable_values"> </div></div>
-            <div th:if="${!orders.isEntering()}"> <div th:replace = "table_values :: table_values"> </div></div>
+            <div th:if="${orders.isEditable()}"> <div th:replace = "table_editable_values :: table_editable_values"> </div></div>
+            <div th:if="${!orders.isEditable()}"> <div th:replace = "table_values :: table_values"> </div></div>
         </div>
     </div>
 </main>

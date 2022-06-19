@@ -1,6 +1,5 @@
 package com.example.demo.basicClasses.services;
 
-import com.example.demo.basicClasses.api.OrderServiceAPI;
 import com.example.demo.basicClasses.api.exceptions.NotFoundException;
 import com.example.demo.basicClasses.entity.Order;
 import com.example.demo.basicClasses.repositories.OrderRepository;
@@ -23,11 +22,8 @@ public class OrderService {
         this.orderRepository = orderRepository;
     }
 
-    public void save(Order order) {
-        if (order.getService()==null){
-            orderRepository.save(order);
-        }
-        orderRepository.save(order);
+    public Order save(Order order) {
+        return orderRepository.save(order);
     }
 
     public void delete(UUID id){

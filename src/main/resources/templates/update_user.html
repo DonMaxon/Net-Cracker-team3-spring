@@ -37,9 +37,7 @@
 <div class="container">
 
     <div class="py-5 text-center">
-        <img class="d-block mx-auto mb-4" src="../assets/brand/bootstrap-logo.svg" alt="" width="72" height="57">
         <h2>New user</h2>
-        <p class="lead">Below is an example form built entirely with Bootstrap’s form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p>
     </div>
     <form method="post" th:object="${user}" th:action="@{/update_user(user=${user.id})}">
         <div class="row g-5 mx-auto" >
@@ -54,14 +52,14 @@
                             <input type="text" class="form-control" id="lastName" placeholder="" value="" required="required" th:field="*{password}">
                             <br>
                             <label for="firstName" class="form-label">Admin</label>
-                            <select class="form-control" th:field="*{admin}">
+                            <select class="form-control form-select" th:field="*{admin}">
                                 <option th:value="1" >true</option>
                                 <option th:value="0" >false</option>
                             </select>
                             <br>
                             <br>
                             <label for="firstName" class="form-label">Customer</label>
-                            <select class = "new_info_input" required="required" th:field="*{customer}">
+                            <select class = "new_info_input form-select" required="required" th:field="*{customer}">
                                 <option  th:each="inf : ${customers}" th:text="${inf.firstName}+' '+${inf.lastName}" th:value="${inf.id}">Customers</option>
                                 <option  th:text="Nobody" th:value="${null}">Nobody</option></select>
                             <br>

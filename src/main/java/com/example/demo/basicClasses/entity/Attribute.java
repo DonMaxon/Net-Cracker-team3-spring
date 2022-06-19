@@ -1,7 +1,5 @@
 package com.example.demo.basicClasses.entity;
 
-import com.example.demo.basicClasses.Repo;
-
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.*;
 
@@ -181,14 +179,14 @@ public class Attribute implements ObjectWithId {
         }
 
         private static Specification findSpec(UUID id){
-            Repo repo = Repo.getInstance();
+            /*Repo repo = Repo.getInstance();
             if (repo!=null&&repo.getSpecs()!=null) {
                 for (int i = 0; i < repo.getSpecs().size(); ++i) {
                     if (id.equals(((ArrayList<Specification>)repo.getSpecs()).get(i).getId())) {
                         return repo.getSpecs().get(i);
                     }
                 }
-            }
+            }*/
             return new Specification(id);
         }
     }

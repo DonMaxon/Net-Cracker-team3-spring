@@ -18,7 +18,7 @@ import java.util.*;
 @JsonDeserialize(using = OrderDeserializer.class)
 @Entity
 @Table(name = "Orders")
-public class Order implements OrderService, ObjectWithId {
+public class Order implements ObjectWithId {
 
     public enum OrderStatus  {ENTERING, IN_PROGRESS, COMPLETED};
     public enum OrderAIM{NEW, MODIFY, DISCONNECT};
@@ -121,13 +121,6 @@ public class Order implements OrderService, ObjectWithId {
         return params;
     }
 
-    public void setParams(Map<UUID, AttributeValue> params) {
-        if (status==OrderStatus.ENTERING||status==null) {
-            this.params = params;
-        }
-
-    }
-
     public UUID getId() {
         return id;
     }
@@ -182,8 +175,8 @@ public class Order implements OrderService, ObjectWithId {
     }
 
     @JsonGetter
-    public ArrayList<AttributeValue> getAttributeValues(){
-        return new ArrayList<>(params.values());
+    public List<AttributeValue> getAttributeValues(){
+        return values;
     }
     @JsonSetter
     public void setAttributeValues(List<AttributeValue> values){
@@ -221,15 +214,6 @@ public class Order implements OrderService, ObjectWithId {
         if (status == OrderStatus.COMPLETED&&aim==OrderAIM.DISCONNECT){
             service.setStatus(Service.ServiceStatus.DISCONNECTED);
         }
-        if (status == OrderStatus.COMPLETED&&aim!=OrderAIM.DISCONNECT){
-            for (Map.Entry entryOrder: params.entrySet()){
-                for (Map.Entry entryService: service.getParams().entrySet()){
-                    if (entryOrder.getKey().equals(entryService.getKey())){
-                        entryService.setValue(entryOrder.getValue());
-                    }
-                }
-            }
-        }
         this.status = status;
     }
 
@@ -262,9 +246,9 @@ public class Order implements OrderService, ObjectWithId {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", service=" + service +
-                ", specification=" + specification +
-                ", customer=" + customer +
+                //", service=" + service.getId() +
+                ", specification=" + specification.getId() +
+                ", customer=" + customer.getId() +
                 ", status=" + status +
                 ", aim=" + aim +
                 ", values=" + values +
@@ -319,8 +303,8 @@ public class Order implements OrderService, ObjectWithId {
         customer=new Customer(specID);
     }
 
-    public boolean isEntering (){
-        if (status==OrderStatus.ENTERING){
+    public boolean isEditable(){
+        if (status==OrderStatus.ENTERING && aim != OrderAIM.DISCONNECT){
             return true;
         }
         return false;

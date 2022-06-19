@@ -1,8 +1,6 @@
 package com.example.demo.basicClasses.entity;
 
 
-import com.example.demo.basicClasses.Repo;
-import com.example.demo.basicClasses.deserializers.ServiceDeserializer;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +16,23 @@ import java.util.*;
 //@JsonDeserialize(using = ServiceDeserializer.class)
 @Entity
 @Table(name = "service")
-public class Service implements OrderService,  ObjectWithId {
+public class Service implements  ObjectWithId {
+
+    public List<AttributeValue> getValues() {
+        return values;
+    }
+
+    public void setValues(List<AttributeValue> values) {
+        this.values = values;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
+    }
 
     public enum ServiceStatus  {PLANNED, ACTIVE, DISCONNECTED};
 
@@ -52,6 +66,12 @@ public class Service implements OrderService,  ObjectWithId {
     @Transient
     @JsonIgnore
     private Map<UUID, AttributeValue> params;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "service")
+    private List<AttributeValue> values;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "service")
+    private List<Order> orders;
 
 
     public Service() {
@@ -94,22 +114,14 @@ public class Service implements OrderService,  ObjectWithId {
         params = new HashMap<>();
     }
 
-    public void addAttribute(UUID id, AttributeValue value){
-        params.put(id, value);
-    }
-
-    public void changeValue(UUID id, AttributeValue newVal){
-        params.put(id, newVal);
-    }
-
     public Map<UUID, AttributeValue> getParams() {
+        Map<UUID, AttributeValue> params = new HashMap<>();
+        for(AttributeValue value : values){
+            params.put(value.getAttributeId(), value);
+        }
+        this.params = params;
         return params;
     }
-
-    public void setParams(Map<UUID, AttributeValue> params) {
-        this.params = params;
-    }
-
 
     public UUID getId() {
         return id;
@@ -161,51 +173,17 @@ public class Service implements OrderService,  ObjectWithId {
     }
 
     @JsonGetter
-    public ArrayList<AttributeValue> getAttributeValues(){
-        ArrayList<AttributeValue> values = new ArrayList<>(params.values());
+    public List<AttributeValue> getAttributeValues(){
         return values;
     }
     @JsonSetter
     public void setAttributeValues(List<AttributeValue> values){
+        this.values = values;
         params = new HashMap<>();
-        for (int i =0; i < values.size(); ++i){
-            params.put(values.get(i).getAttributeId(), values.get(i));
+        for(AttributeValue value : values){
+            params.put(value.getAttributeId(), value);
         }
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Service service = (Service) o;
-        return Objects.equals(id, service.id) &&
-                Objects.equals(name, service.name) &&
-                Objects.equals(description, service.description) &&
-                status == service.status &&
-                Objects.equals(specification, service.specification) &&
-                Objects.equals(customer.getId(), service.customer.getId())&&
-                Objects.equals(params, service.params);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, description, status, specification, customer, params);
-    }
-
-
-    @Override
-    public String toString() {
-        return "Service{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", status=" + status +
-                ", specification=" + specification +
-                ", customer=" + customer.getId().toString() +
-                ", params=" + params +
-                '}';
-    }
-
 
     public String serialize() throws JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
